@@ -8,46 +8,17 @@
 
 import Foundation
 
-typealias JsonObject = [String: AnyObject]
-
-extension Array {
-  func ofType<T>(type: T.Type) -> [T] {
-    return self.filter { $0 is T }.map { $0 as! T }
-  }
-}
-
-func += <KeyType, ValueType> (inout left: Dictionary<KeyType, ValueType>, right: Dictionary<KeyType, ValueType>) {
-  for (k, v) in right {
-    left.updateValue(v, forKey: k)
-  }
-}
-
-public class AllObjects {
-  var dict: [String: PBXObject] = [:]
-  var fullFilePaths: [String: String] = [:]
-
-  subscript(key: String) -> PBXObject? {
-    get { return dict[key] }
-  }
-
-  func object<T : PBXObject>(key: String) -> T {
-    let obj = dict[key]!
-    if let t = obj as? T {
-      return t
-    }
-
-    return T(id: key, dict: obj.dict, allObjects: self)
-  }
-}
-
 enum ProjectFileError : ErrorType, CustomStringConvertible {
   case InvalidData
+  case NotXcodeproj
   case MissingPbxproj
 
   var description: String {
     switch self {
     case .InvalidData:
       return "Data in .pbxproj file not in expected format"
+    case .NotXcodeproj:
+      return "Path is not a .xcodeproj package"
     case .MissingPbxproj:
       return "project.pbxproj file missing"
     }
@@ -57,8 +28,8 @@ enum ProjectFileError : ErrorType, CustomStringConvertible {
 public class XCProjectFile {
   public let project: PBXProject
   let dict: JsonObject
-  let openStepFormat: Bool
-  let allObjects = AllObjects()
+  let format: NSPropertyListFormat
+  let allObjects: AllObjects
 
   public convenience init(xcodeprojPath: String) throws {
 
@@ -66,10 +37,12 @@ public class XCProjectFile {
       throw ProjectFileError.MissingPbxproj
     }
 
-    try self.init(propertyListData: data)
+    let name = try XCProjectFile.projectName(xcodeprojPath)
+
+    try self.init(propertyListData: data, projectName: name)
   }
 
-  public convenience init(propertyListData data: NSData) throws {
+  public convenience init(propertyListData data: NSData, projectName: String) throws {
 
     let options = NSPropertyListReadOptions.Immutable
     var format: NSPropertyListFormat = NSPropertyListFormat.BinaryFormat_v1_0
@@ -79,12 +52,13 @@ public class XCProjectFile {
       throw ProjectFileError.InvalidData
     }
 
-    self.init(dict: dict, openStepFormat: format == NSPropertyListFormat.OpenStepFormat)
+    self.init(dict: dict, format: format, projectName: projectName)
   }
 
-  init(dict: JsonObject, openStepFormat: Bool) {
+  init(dict: JsonObject, format: NSPropertyListFormat, projectName: String) {
     self.dict = dict
-    self.openStepFormat = openStepFormat
+    self.format = format
+    self.allObjects = AllObjects(projectName: projectName)
     let objects = dict["objects"] as! [String: JsonObject]
 
     for (key, obj) in objects {
@@ -97,32 +71,86 @@ public class XCProjectFile {
     self.allObjects.fullFilePaths = paths(self.project.mainGroup, prefix: "")
   }
 
+  static func projectName(xcodeprojPath: String) throws -> String {
+
+    let url = NSURL(fileURLWithPath: xcodeprojPath, isDirectory: true)
+
+    guard let subpaths = url.pathComponents,
+          let last = subpaths.last,
+          let range = last.rangeOfString(".xcodeproj")
+    else {
+      throw ProjectFileError.NotXcodeproj
+    }
+
+    return last.substringToIndex(range.startIndex)
+  }
+
   static func createObject(id: String, dict: JsonObject, allObjects: AllObjects) -> PBXObject {
     let isa = dict["isa"] as? String
 
-    if isa == "PBXNativeTarget" {
-      return PBXNativeTarget(id: id, dict: dict, allObjects: allObjects)
+    if isa == "PBXProject" {
+      return PBXProject(id: id, dict: dict, allObjects: allObjects)
     }
-    if isa == "PBXBuildPhase" {
-      return PBXBuildPhase(id: id, dict: dict, allObjects: allObjects)
-    }
-    if isa == "PBXResourcesBuildPhase" {
-      return PBXResourcesBuildPhase(id: id, dict: dict, allObjects: allObjects)
+    if isa == "PBXContainerItemProxy" {
+      return PBXContainerItemProxy(id: id, dict: dict, allObjects: allObjects)
     }
     if isa == "PBXBuildFile" {
       return PBXBuildFile(id: id, dict: dict, allObjects: allObjects)
     }
-    if isa == "PBXVariantGroup" {
-      return PBXVariantGroup(id: id, dict: dict, allObjects: allObjects)
+    if isa == "PBXCopyFilesBuildPhase" {
+      return PBXCopyFilesBuildPhase(id: id, dict: dict, allObjects: allObjects)
     }
-    if isa == "PBXGroup" {
-      return PBXGroup(id: id, dict: dict, allObjects: allObjects)
+    if isa == "PBXFrameworksBuildPhase" {
+      return PBXFrameworksBuildPhase(id: id, dict: dict, allObjects: allObjects)
+    }
+    if isa == "PBXHeadersBuildPhase" {
+      return PBXHeadersBuildPhase(id: id, dict: dict, allObjects: allObjects)
+    }
+    if isa == "PBXResourcesBuildPhase" {
+      return PBXResourcesBuildPhase(id: id, dict: dict, allObjects: allObjects)
+    }
+    if isa == "PBXShellScriptBuildPhase" {
+      return PBXShellScriptBuildPhase(id: id, dict: dict, allObjects: allObjects)
+    }
+    if isa == "PBXSourcesBuildPhase" {
+      return PBXSourcesBuildPhase(id: id, dict: dict, allObjects: allObjects)
+    }
+    if isa == "PBXBuildStyle" {
+      return PBXBuildStyle(id: id, dict: dict, allObjects: allObjects)
+    }
+    if isa == "XCBuildConfiguration" {
+      return XCBuildConfiguration(id: id, dict: dict, allObjects: allObjects)
+    }
+    if isa == "PBXAggregateTarget" {
+      return PBXAggregateTarget(id: id, dict: dict, allObjects: allObjects)
+    }
+    if isa == "PBXNativeTarget" {
+      return PBXNativeTarget(id: id, dict: dict, allObjects: allObjects)
+    }
+    if isa == "PBXTargetDependency" {
+      return PBXTargetDependency(id: id, dict: dict, allObjects: allObjects)
+    }
+    if isa == "XCConfigurationList" {
+      return XCConfigurationList(id: id, dict: dict, allObjects: allObjects)
+    }
+    if isa == "PBXReference" {
+      return PBXReference(id: id, dict: dict, allObjects: allObjects)
     }
     if isa == "PBXFileReference" {
       return PBXFileReference(id: id, dict: dict, allObjects: allObjects)
     }
+    if isa == "PBXGroup" {
+      return PBXGroup(id: id, dict: dict, allObjects: allObjects)
+    }
+    if isa == "PBXVariantGroup" {
+      return PBXVariantGroup(id: id, dict: dict, allObjects: allObjects)
+    }
+    if isa == "XCVersionGroup" {
+      return XCVersionGroup(id: id, dict: dict, allObjects: allObjects)
+    }
 
     // Fallback
+    assertionFailure("Unknown PBXObject subclass isa=\(isa)")
     return PBXObject(id: id, dict: dict, allObjects: allObjects)
   }
 
@@ -130,7 +158,7 @@ public class XCProjectFile {
     var ps: [String: String] = [:]
 
     for file in current.fileRefs {
-      ps[file.id] = prefix + "/" + file.path
+      ps[file.id] = prefix + "/" + file.path!
     }
 
     for group in current.subGroups {
@@ -144,74 +172,4 @@ public class XCProjectFile {
 
     return ps
   }
-}
-
-public class PBXObject {
-  let id: String
-  let dict: JsonObject
-  let allObjects: AllObjects
-
-  public required init(id: String, dict: AnyObject, allObjects: AllObjects) {
-    self.id = id
-    self.dict = dict as! JsonObject
-    self.allObjects = allObjects
-  }
-
-  func string(key: String) -> String? {
-    return dict[key] as? String
-  }
-
-  func object<T : PBXObject>(key: String) -> T {
-    let objectKey = dict[key] as! String
-    return allObjects.object(objectKey)
-  }
-
-  func objects<T : PBXObject>(key: String) -> [T] {
-    let objectKeys = dict[key] as! [String]
-    return objectKeys.map(allObjects.object)
-  }
-}
-
-public class PBXProject : PBXObject {
-  public lazy var targets: [PBXNativeTarget] = self.objects("targets")
-  public lazy var mainGroup: PBXGroup = self.object("mainGroup")
-}
-
-public class PBXNativeTarget : PBXObject {
-  public lazy var productName: String = self.string("productName")!
-  public lazy var buildPhases: [PBXBuildPhase] = self.objects("buildPhases")
-}
-
-public class PBXBuildPhase : PBXObject {
-  public lazy var files: [PBXBuildFile] = self.objects("files")
-}
-
-public class PBXResourcesBuildPhase : PBXBuildPhase {
-}
-
-public class PBXBuildFile : PBXObject {
-  public lazy var fileRef: PBXReference = self.object("fileRef")
-}
-
-public class PBXReference : PBXObject {
-}
-
-public class PBXGroup : PBXReference {
-  public lazy var name: String = self.string("name")!
-  public lazy var path: String? = self.string("path")
-  public lazy var children: [PBXReference] = self.objects("children")
-
-  // convenience accessors
-  public lazy var subGroups: [PBXGroup] = self.children.ofType(PBXGroup.self)
-  public lazy var fileRefs: [PBXFileReference] = self.children.ofType(PBXFileReference)
-}
-
-public class PBXVariantGroup : PBXGroup {
-}
-
-public class PBXFileReference : PBXReference {
-  public lazy var path: String = self.string("path")!
-
-  // convenience accessor
-  public lazy var fullPath: String = self.allObjects.fullFilePaths[self.id]!
 }

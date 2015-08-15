@@ -12,8 +12,11 @@ import Foundation
 let xcodeproj = "Test.xcodeproj"
 
 
-// Parse JSON to XCProjectFile object
+// Load from a xcodeproj
 let proj = try! XCProjectFile(xcodeprojPath: xcodeproj)
+
+// Write out a new pbxproj file
+try! proj.writeToXcodeproj("/Users/tom/Projects/Xcode.swift/Example/" + xcodeproj)
 
 // Print paths for all files in Resources build phases
 for target in proj.project.targets {
@@ -28,6 +31,16 @@ for target in proj.project.targets {
           print(variantFileReference.fullPath)
         }
       }
+    }
+  }
+}
+
+// Print shells
+for target in proj.project.targets {
+  for buildPhase in target.buildPhases {
+    print(buildPhase)
+    if let shellScriptPhase = buildPhase as? PBXShellScriptBuildPhase {
+      print(shellScriptPhase.shellScript)
     }
   }
 }
