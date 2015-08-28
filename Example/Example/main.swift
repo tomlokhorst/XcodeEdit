@@ -12,21 +12,8 @@ import Foundation
 let projectFile = "project.pbxproj"
 
 
-// Call plutil to convert pbxproj file to JSON
-let task = NSTask()
-task.launchPath = "/usr/bin/plutil"
-task.arguments = ["-convert", "json", "-o", "-", projectFile]
-
-let pipe = NSPipe()
-task.standardOutput = pipe
-task.launch()
-
-let data = pipe.fileHandleForReading.readDataToEndOfFile()
-let output = NSString(data: data, encoding: NSUTF8StringEncoding) as! String
-
-
 // Parse JSON to XCProjectFile object
-let proj = XCProjectFile(filename: "project.pbxproj")!
+let proj = try! XCProjectFile(filename: projectFile)!
 
 // Print paths for all files in Resources build phases
 for target in proj.project.targets {

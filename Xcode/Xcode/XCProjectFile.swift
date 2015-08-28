@@ -46,13 +46,18 @@ public class XCProjectFile {
   let openStepFormat: Bool
   let allObjects = AllObjects()
 
-  public convenience init?(filename: String) {
+  public convenience init?(filename: String) throws {
 
     guard let data = NSData(contentsOfFile: filename) else { return nil }
 
+    try self.init(propertyListData: data)
+  }
+
+  public convenience init?(propertyListData data: NSData) throws {
+
     let options = NSPropertyListReadOptions.Immutable
     var format: NSPropertyListFormat = NSPropertyListFormat.BinaryFormat_v1_0
-    let obj = try? NSPropertyListSerialization.propertyListWithData(data, options: options, format: &format)
+    let obj = try NSPropertyListSerialization.propertyListWithData(data, options: options, format: &format)
 
     guard let dict = obj as? JsonObject else { return nil }
 
@@ -181,7 +186,6 @@ public class PBXGroup : PBXReference {
   // convenience accessors
   public lazy var subGroups: [PBXGroup] = self.children.ofType(PBXGroup.self)
   public lazy var fileRefs: [PBXFileReference] = self.children.ofType(PBXFileReference)
-
 }
 
 public class PBXVariantGroup : PBXGroup {
