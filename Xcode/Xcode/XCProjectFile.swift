@@ -22,7 +22,7 @@ func += <KeyType, ValueType> (inout left: Dictionary<KeyType, ValueType>, right:
   }
 }
 
-class AllObjects {
+public class AllObjects {
   var dict: [String: PBXObject] = [:]
   var fullFilePaths: [String: String] = [:]
 
@@ -43,14 +43,25 @@ class AllObjects {
 public class XCProjectFile {
   public let project: PBXProject
   let dict: JsonObject
+  let openStepFormat: Bool
   let allObjects = AllObjects()
 
-  public init(jsonString: String) {
+  public convenience init?(filename: String) {
 
-    let data = jsonString.dataUsingEncoding(NSUTF8StringEncoding)
-    let obj : AnyObject? = NSJSONSerialization.JSONObjectWithData(data!, options: .AllowFragments, error: nil)
+    guard let data = NSData(contentsOfFile: filename) else { return nil }
 
-    self.dict = obj as! JsonObject
+    let options = NSPropertyListReadOptions.Immutable
+    var format: NSPropertyListFormat = NSPropertyListFormat.BinaryFormat_v1_0
+    let obj = try? NSPropertyListSerialization.propertyListWithData(data, options: options, format: &format)
+
+    guard let dict = obj as? JsonObject else { return nil }
+
+    self.init(dict: dict, openStepFormat: format == NSPropertyListFormat.OpenStepFormat)
+  }
+
+  init(dict: JsonObject, openStepFormat: Bool) {
+    self.dict = dict
+    self.openStepFormat = openStepFormat
     let objects = dict["objects"] as! [String: JsonObject]
 
     for (key, obj) in objects {
@@ -117,7 +128,7 @@ public class PBXObject {
   let dict: JsonObject
   let allObjects: AllObjects
 
-  init(id: String, dict: AnyObject, allObjects: AllObjects) {
+  public required init(id: String, dict: AnyObject, allObjects: AllObjects) {
     self.id = id
     self.dict = dict as! JsonObject
     self.allObjects = allObjects

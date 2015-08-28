@@ -26,19 +26,19 @@ let output = NSString(data: data, encoding: NSUTF8StringEncoding) as! String
 
 
 // Parse JSON to XCProjectFile object
-let proj = XCProjectFile(jsonString: output)
+let proj = XCProjectFile(filename: "project.pbxproj")!
 
 // Print paths for all files in Resources build phases
 for target in proj.project.targets {
   for resourcesBuildPhase in target.buildPhases.ofType(PBXResourcesBuildPhase.self) {
     for file in resourcesBuildPhase.files {
       if let fileReference = file.fileRef as? PBXFileReference {
-        println(fileReference.fullPath)
+        print(fileReference.fullPath)
       }
         // Variant groups are localizable
       else if let variantGroup = file.fileRef as? PBXVariantGroup {
         for variantFileReference in variantGroup.fileRefs {
-          println(variantFileReference.fullPath)
+          print(variantFileReference.fullPath)
         }
       }
     }
