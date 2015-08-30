@@ -10,29 +10,6 @@ import Foundation
 
 typealias JsonObject = [String: AnyObject]
 
-public class AllObjects {
-  var projectName: String
-  var dict: [String: PBXObject] = [:]
-  var fullFilePaths: [String: String] = [:]
-
-  init(projectName: String) {
-    self.projectName = projectName
-  }
-
-  subscript(key: String) -> PBXObject? {
-    get { return dict[key] }
-  }
-
-  func object<T : PBXObject>(key: String) -> T {
-    let obj = dict[key]!
-    if let t = obj as? T {
-      return t
-    }
-
-    return T(id: key, dict: obj.dict, allObjects: self)
-  }
-}
-
 public /* abstract */ class PBXObject {
   let id: String
   let dict: JsonObject

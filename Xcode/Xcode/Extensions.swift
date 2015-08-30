@@ -8,12 +8,18 @@
 
 import Foundation
 
-extension Array {
+func += <KeyType, ValueType> (inout left: Dictionary<KeyType, ValueType>, right: Dictionary<KeyType, ValueType>) {
+  for (k, v) in right {
+    left.updateValue(v, forKey: k)
+  }
+}
+
+extension SequenceType {
   func ofType<T>(type: T.Type) -> [T] {
-    return self.filter { $0 is T }.map { $0 as! T }
+    return self.flatMap { $0 as? T }
   }
 
-  func any(pred: Element -> Bool) -> Bool {
+  func any(pred: Generator.Element -> Bool) -> Bool {
     for elem in self {
       if pred(elem) {
         return true
@@ -22,10 +28,23 @@ extension Array {
 
     return false
   }
-}
 
-func += <KeyType, ValueType> (inout left: Dictionary<KeyType, ValueType>, right: Dictionary<KeyType, ValueType>) {
-  for (k, v) in right {
-    left.updateValue(v, forKey: k)
+  func groupBy<Key: Hashable>(keySelector: Generator.Element -> Key) -> [Key : [Generator.Element]] {
+    var groupedBy = Dictionary<Key, [Generator.Element]>()
+
+    for element in self {
+      let key = keySelector(element)
+      if let group = groupedBy[key] {
+        groupedBy[key] = group + [element]
+      } else {
+        groupedBy[key] = [element]
+      }
+    }
+
+    return groupedBy
+  }
+
+  func sortBy<U: Comparable>(keySelector: Generator.Element -> U) -> [Generator.Element] {
+    return self.sort { keySelector($0) < keySelector($1) }
   }
 }

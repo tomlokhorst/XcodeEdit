@@ -18,10 +18,10 @@ extension XCProjectFile {
     let name = try XCProjectFile.projectName(xcodeprojPath)
     let path = xcodeprojPath + "/project.pbxproj"
 
-    allObjects.projectName = name
+    let serializer = Serializer(projectName: name, projectFile: self)
 
     if format == NSPropertyListFormat.OpenStepFormat {
-      try openStepSerialization.writeToFile(path, atomically: true, encoding: NSUTF8StringEncoding)
+      try serializer.openStepSerialization.writeToFile(path, atomically: true, encoding: NSUTF8StringEncoding)
       return true
     }
     else {
@@ -31,10 +31,11 @@ extension XCProjectFile {
   }
 
   public func serialize(projectName: String) throws -> NSData {
-    allObjects.projectName = projectName
+
+    let serializer = Serializer(projectName: projectName, projectFile: self)
 
     if format == NSPropertyListFormat.OpenStepFormat {
-      return openStepSerialization.dataUsingEncoding(NSUTF8StringEncoding)!
+      return serializer.openStepSerialization.dataUsingEncoding(NSUTF8StringEncoding)!
     }
     else {
       return try NSPropertyListSerialization.dataWithPropertyList(dict, format: format, options: 0)
@@ -51,28 +52,61 @@ let specialRegexes = [
   "\\t": try! NSRegularExpression(pattern: "\\t", options: []),
 ]
 
-extension XCProjectFile {
+internal class Serializer {
+
+  let projectName: String
+  let projectFile: XCProjectFile
+
+  init(projectName: String, projectFile: XCProjectFile) {
+    self.projectName = projectName
+    self.projectFile = projectFile
+  }
+
+  lazy var targetsByConfigId: [String: PBXNativeTarget] = {
+    var dict: [String: PBXNativeTarget] = [:]
+    for target in self.projectFile.project.targets {
+      dict[target.buildConfigurationList.id] = target
+    }
+
+    return dict
+  }()
+
+  lazy var buildPhaseByFileId: [String: PBXBuildPhase] = {
+
+    let buildPhases = self.projectFile.allObjects.dict.values.ofType(PBXBuildPhase)
+
+    var dict: [String: PBXBuildPhase] = [:]
+    for buildPhase in buildPhases {
+      for file in buildPhase.files {
+        dict[file.id] = buildPhase
+      }
+    }
+
+    return dict
+  }()
+
   var openStepSerialization: String {
     var lines = [
       "// !$*UTF8*$!",
       "{",
     ]
 
-    for key in dict.keys.sort() {
-      let val: AnyObject = dict[key]!
+    for key in projectFile.dict.keys.sort() {
+      let val: AnyObject = projectFile.dict[key]!
 
       if key == "objects" {
 
         lines.append("\tobjects = {")
 
-        let isas = Set(allObjects.dict.values.map { $0.isa })
+        let groupedObjects = projectFile.allObjects.dict.values
+          .groupBy { $0.isa }
+          .sortBy { $0.0 }
 
-        for isa in isas.sort() {
+        for (isa, objects) in groupedObjects {
           lines.append("")
           lines.append("/* Begin \(isa) section */")
-          let objects = allObjects.dict.values.filter { $0.isa == isa }
 
-          for object in objects.sort({ $0.id < $1.id }) {
+          for object in objects.sortBy({ $0.id }) {
 
             let multiline = isa != "PBXBuildFile" && isa != "PBXFileReference"
 
@@ -110,11 +144,11 @@ extension XCProjectFile {
   }
 
   func comment(key: String, verbose: Bool) -> String? {
-    if key == project.id {
+    if key == projectFile.project.id {
       return "Project object"
     }
 
-    if let obj = allObjects[key] {
+    if let obj = projectFile.allObjects.dict[key] {
       if let name = obj.dict["name"] as? String {
         return name
       }
@@ -149,29 +183,18 @@ extension XCProjectFile {
         return shellScript.name
       }
       if let buildFile = obj as? PBXBuildFile {
-        // TODO: move these lookup tables outside of this function
-        let objects = Array(allObjects.dict.values)
-        let buildPhases = objects.ofType(PBXBuildPhase)
-        let buildPhase = buildPhases.filter { $0.files.any { $0.id == key } }.first
-
-        if let buildPhase = buildPhase,
+        if let buildPhase = buildPhaseByFileId[key],
           let fileRef = comment(buildFile.fileRef.id, verbose: verbose),
           let group = comment(buildPhase.id, verbose: verbose) {
 
-            return "\(fileRef) in \(group)"
+          return "\(fileRef) in \(group)"
         }
       }
       if obj is XCConfigurationList {
-        // TODO: move these lookup tables outside of this function
-        let objects = Array(allObjects.dict.values)
-        let targets = objects.ofType(PBXTarget)
-        if let target = targets.filter({ $0.buildConfigurationList.id == key }).first {
+        if let target = targetsByConfigId[key] {
           return "Build configuration list for \(target.isa) \"\(target.name)\""
         }
-        let projects = objects.ofType(PBXProject)
-        if let project = projects.filter({ $0.buildConfigurationList.id == key }).first {
-          return "Build configuration list for \(project.isa) \"\(allObjects.projectName)\""
-        }
+        return "Build configuration list for PBXProject \"\(projectName)\""
       }
 
       return obj.isa
@@ -289,7 +312,6 @@ extension XCProjectFile {
         parts.append(p)
       }
     }
-
 
     var objComment = ""
     if let c = comment(objKey, verbose: true) {
