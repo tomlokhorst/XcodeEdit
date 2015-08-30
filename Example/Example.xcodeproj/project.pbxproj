@@ -16,7 +16,7 @@
 		E22195AC1B7C6EDA00F58D3F /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 12;
-			dstPath = .;
+			dstPath = Test.xcodeproj;
 			dstSubfolderSpec = 16;
 			files = (
 				E262D4431B7E20DB0057CCEE /* project.pbxproj in CopyFiles */,

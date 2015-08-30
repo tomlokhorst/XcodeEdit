@@ -40,26 +40,44 @@ public class AllObjects {
   }
 }
 
+enum ProjectFileError : ErrorType, CustomStringConvertible {
+  case InvalidData
+  case MissingPbxproj
+
+  var description: String {
+    switch self {
+    case .InvalidData:
+      return "Data in .pbxproj file not in expected format"
+    case .MissingPbxproj:
+      return "project.pbxproj file missing"
+    }
+  }
+}
+
 public class XCProjectFile {
   public let project: PBXProject
   let dict: JsonObject
   let openStepFormat: Bool
   let allObjects = AllObjects()
 
-  public convenience init?(filename: String) throws {
+  public convenience init(xcodeprojPath: String) throws {
 
-    guard let data = NSData(contentsOfFile: filename) else { return nil }
+    guard let data = NSData(contentsOfFile: xcodeprojPath + "/project.pbxproj") else {
+      throw ProjectFileError.MissingPbxproj
+    }
 
     try self.init(propertyListData: data)
   }
 
-  public convenience init?(propertyListData data: NSData) throws {
+  public convenience init(propertyListData data: NSData) throws {
 
     let options = NSPropertyListReadOptions.Immutable
     var format: NSPropertyListFormat = NSPropertyListFormat.BinaryFormat_v1_0
     let obj = try NSPropertyListSerialization.propertyListWithData(data, options: options, format: &format)
 
-    guard let dict = obj as? JsonObject else { return nil }
+    guard let dict = obj as? JsonObject else {
+      throw ProjectFileError.InvalidData
+    }
 
     self.init(dict: dict, openStepFormat: format == NSPropertyListFormat.OpenStepFormat)
   }

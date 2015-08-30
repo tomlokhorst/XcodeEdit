@@ -8,12 +8,12 @@
 
 import Foundation
 
-// The pbxproj file to load, test this with your own project!
-let projectFile = "project.pbxproj"
+// The xcodeproj file to load, test this with your own project!
+let xcodeproj = "Test.xcodeproj"
 
 
 // Parse JSON to XCProjectFile object
-let proj = try! XCProjectFile(filename: projectFile)!
+let proj = try! XCProjectFile(xcodeprojPath: xcodeproj)
 
 // Print paths for all files in Resources build phases
 for target in proj.project.targets {
