@@ -24,7 +24,7 @@ func += <KeyType, ValueType> (inout left: Dictionary<KeyType, ValueType>, right:
 
 public class AllObjects {
   var dict: [String: PBXObject] = [:]
-  var fullFilePaths: [String: String] = [:]
+  var fullFilePaths: [String: Path] = [:]
 
   subscript(key: String) -> PBXObject? {
     get { return dict[key] }
@@ -126,11 +126,19 @@ public class XCProjectFile {
     return PBXObject(id: id, dict: dict, allObjects: allObjects)
   }
 
-  func paths(current: PBXGroup, prefix: String) -> [String: String] {
-    var ps: [String: String] = [:]
+  func paths(current: PBXGroup, prefix: String) -> [String: Path] {
+
+    var ps: [String: Path] = [:]
 
     for file in current.fileRefs {
-      ps[file.id] = prefix + "/" + file.path
+      switch file.sourceTree {
+      case .Group:
+        ps[file.id] = .RelativeTo(.SourceRoot, prefix + "/" + file.path)
+      case .Absolute:
+        ps[file.id] = .Absolute(file.path)
+      case let .RelativeTo(sourceTreeFolder):
+        ps[file.id] = .RelativeTo(sourceTreeFolder, file.path)
+      }
     }
 
     for group in current.subGroups {
@@ -209,9 +217,40 @@ public class PBXGroup : PBXReference {
 public class PBXVariantGroup : PBXGroup {
 }
 
+public enum SourceTree {
+  case Absolute
+  case Group
+  case RelativeTo(SourceTreeFolder)
+
+  init?(sourceTreeString: String) {
+    switch sourceTreeString {
+    case "<absolute>":
+      self = .Absolute
+    case "<group>":
+      self = .Group
+    default:
+      guard let sourceTreeFolder = SourceTreeFolder(rawValue: sourceTreeString) else { return nil }
+      self = .RelativeTo(sourceTreeFolder)
+    }
+  }
+}
+
+public enum SourceTreeFolder: String {
+  case SourceRoot = "SOURCE_ROOT"
+  case BuildProductsDir = "BUILT_PRODUCTS_DIR"
+  case DeveloperDir = "DEVELOPER_DIR"
+  case SDKRoot = "SDKROOT"
+}
+
+public enum Path {
+  case Absolute(String)
+  case RelativeTo(SourceTreeFolder, String)
+}
+
 public class PBXFileReference : PBXReference {
   public lazy var path: String = self.string("path")!
+  public lazy var sourceTree: SourceTree = self.string("sourceTree").flatMap(SourceTree.init)!
 
   // convenience accessor
-  public lazy var fullPath: String = self.allObjects.fullFilePaths[self.id]!
+  public lazy var fullPath: Path = self.allObjects.fullFilePaths[self.id]!
 }
