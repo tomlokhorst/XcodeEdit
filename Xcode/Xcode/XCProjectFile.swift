@@ -60,9 +60,10 @@ public class XCProjectFile {
   let openStepFormat: Bool
   let allObjects = AllObjects()
 
-  public convenience init(xcodeprojPath: String) throws {
+  public convenience init(xcodeprojURL: NSURL) throws {
 
-    guard let data = NSData(contentsOfFile: xcodeprojPath + "/project.pbxproj") else {
+    let pbxprojURL = xcodeprojURL.URLByAppendingPathComponent("project.pbxproj")
+    guard let data = NSData(contentsOfURL: pbxprojURL) else {
       throw ProjectFileError.MissingPbxproj
     }
 
