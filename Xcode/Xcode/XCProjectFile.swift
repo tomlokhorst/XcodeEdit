@@ -10,7 +10,7 @@ import Foundation
 
 typealias JsonObject = [String: AnyObject]
 
-extension Array {
+extension SequenceType {
   func ofType<T>(type: T.Type) -> [T] {
     return self.filter { $0 is T }.map { $0 as! T }
   }
