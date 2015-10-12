@@ -27,6 +27,15 @@ public /* abstract */ class PBXObject {
     return dict[key] as? String
   }
 
+  func object<T : PBXObject>(key: String) -> T? {
+    guard let objectKey = dict[key] as? String else {
+      return nil
+    }
+
+    let obj: T = allObjects.object(objectKey)
+    return obj
+  }
+
   func object<T : PBXObject>(key: String) -> T {
     let objectKey = dict[key] as! String
     return allObjects.object(objectKey)
@@ -57,7 +66,7 @@ public /* abstract */ class PBXProjectItem : PBXContainerItem {
 }
 
 public class PBXBuildFile : PBXProjectItem {
-  public lazy var fileRef: PBXReference = self.object("fileRef")
+  public lazy var fileRef: PBXReference? = self.object("fileRef")
 }
 
 

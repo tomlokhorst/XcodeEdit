@@ -183,10 +183,16 @@ internal class Serializer {
       }
       if let buildFile = obj as? PBXBuildFile {
         if let buildPhase = buildPhaseByFileId[key],
-          let fileRef = comment(buildFile.fileRef.id, verbose: verbose),
           let group = comment(buildPhase.id, verbose: verbose) {
 
-          return "\(fileRef) in \(group)"
+          if let fileRefId = buildFile.fileRef?.id {
+            if let fileRef = comment(fileRefId, verbose: verbose) {
+              return "\(fileRef) in \(group)"
+            }
+          }
+          else {
+            return "(null) in \(group)"
+          }
         }
       }
       if obj is XCConfigurationList {
@@ -244,7 +250,8 @@ internal class Serializer {
         parts.append(");")
       }
       else {
-        parts.append(ps.joinWithSeparator("") + " ); ")
+        let space = valArr.isEmpty ? "" : " "
+        parts.append(ps.joinWithSeparator("") + space + "); ")
       }
 
     }
