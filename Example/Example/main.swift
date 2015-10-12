@@ -9,14 +9,14 @@
 import Foundation
 
 // The xcodeproj file to load, test this with your own project!
-let xcodeproj = "Test.xcodeproj"
+let xcodeproj = NSURL(fileURLWithPath: "/Users/tom/Projects/Xcode.swift/Example/Test.xcodeproj")
 
 
 // Load from a xcodeproj
-let proj = try! XCProjectFile(xcodeprojPath: xcodeproj)
+let proj = try! XCProjectFile(xcodeprojURL: xcodeproj)
 
 // Write out a new pbxproj file
-try! proj.writeToXcodeproj("/Users/tom/Projects/Xcode.swift/Example/" + xcodeproj)
+try! proj.writeToXcodeproj(xcodeprojURL: xcodeproj)
 
 // Print paths for all files in Resources build phases
 for target in proj.project.targets {

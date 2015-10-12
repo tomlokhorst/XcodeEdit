@@ -27,7 +27,7 @@ enum ProjectFileError : ErrorType, CustomStringConvertible {
 
 public class AllObjects {
   var dict: [String: PBXObject] = [:]
-  var fullFilePaths: [String: String] = [:]
+  var fullFilePaths: [String: Path] = [:]
 
   func object<T : PBXObject>(key: String) -> T {
     let obj = dict[key]!
@@ -45,9 +45,10 @@ public class XCProjectFile {
   let format: NSPropertyListFormat
   let allObjects = AllObjects()
 
-  public convenience init(xcodeprojPath: String) throws {
+  public convenience init(xcodeprojURL: NSURL) throws {
 
-    guard let data = NSData(contentsOfFile: xcodeprojPath + "/project.pbxproj") else {
+    let pbxprojURL = xcodeprojURL.URLByAppendingPathComponent("project.pbxproj")
+    guard let data = NSData(contentsOfURL: pbxprojURL) else {
       throw ProjectFileError.MissingPbxproj
     }
 
@@ -82,9 +83,7 @@ public class XCProjectFile {
     self.allObjects.fullFilePaths = paths(self.project.mainGroup, prefix: "")
   }
 
-  static func projectName(xcodeprojPath: String) throws -> String {
-
-    let url = NSURL(fileURLWithPath: xcodeprojPath, isDirectory: true)
+  static func projectName(url: NSURL) throws -> String {
 
     guard let subpaths = url.pathComponents,
           let last = subpaths.last,
@@ -109,11 +108,19 @@ public class XCProjectFile {
     return PBXObject(id: id, dict: dict, allObjects: allObjects)
   }
 
-  func paths(current: PBXGroup, prefix: String) -> [String: String] {
-    var ps: [String: String] = [:]
+  func paths(current: PBXGroup, prefix: String) -> [String: Path] {
+
+    var ps: [String: Path] = [:]
 
     for file in current.fileRefs {
-      ps[file.id] = prefix + "/" + file.path!
+      switch file.sourceTree {
+      case .Group:
+        ps[file.id] = .RelativeTo(.SourceRoot, prefix + "/" + file.path!)
+      case .Absolute:
+        ps[file.id] = .Absolute(file.path!)
+      case let .RelativeTo(sourceTreeFolder):
+        ps[file.id] = .RelativeTo(sourceTreeFolder, file.path!)
+      }
     }
 
     for group in current.subGroups {

@@ -10,23 +10,22 @@ import Foundation
 
 extension XCProjectFile {
 
-  public func writeToXcodeproj(xcodeprojPath: String) throws -> Bool {
+  public func writeToXcodeproj(xcodeprojURL url: NSURL) throws -> Bool {
 
-    let url = NSURL(fileURLWithPath: xcodeprojPath, isDirectory: true)
     try NSFileManager.defaultManager().createDirectoryAtURL(url, withIntermediateDirectories: true, attributes: nil)
 
-    let name = try XCProjectFile.projectName(xcodeprojPath)
-    let path = xcodeprojPath + "/project.pbxproj"
+    let name = try XCProjectFile.projectName(url)
+    let path = url.URLByAppendingPathComponent("project.pbxproj")
 
     let serializer = Serializer(projectName: name, projectFile: self)
 
     if format == NSPropertyListFormat.OpenStepFormat {
-      try serializer.openStepSerialization.writeToFile(path, atomically: true, encoding: NSUTF8StringEncoding)
+      try serializer.openStepSerialization.writeToURL(path, atomically: true, encoding: NSUTF8StringEncoding)
       return true
     }
     else {
       let data = try NSPropertyListSerialization.dataWithPropertyList(dict, format: format, options: 0)
-      return data.writeToFile(path, atomically: true)
+      return data.writeToURL(path, atomically: true)
     }
   }
 
