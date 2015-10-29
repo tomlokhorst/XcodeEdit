@@ -9,7 +9,7 @@ Currently, this project is mostly used to support [R.swift](https://github.com/m
 Releases
 --------
 
- - **0.1.0** - 2015-09-13 - Initial public release
+ - **0.1.0** - 2015-09-28 - Initial public release
 
 
 Licence & Credits

@@ -10,6 +10,9 @@
 		E22195B21B7C6EDA00F58D3F /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22195B11B7C6EDA00F58D3F /* main.swift */; };
 		E262D4431B7E20DB0057CCEE /* project.pbxproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = E262D4421B7E20CF0057CCEE /* project.pbxproj */; };
 		E262D4451B7E21190057CCEE /* XCProjectFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E262D4441B7E21190057CCEE /* XCProjectFile.swift */; };
+		E292B9C71B9236D900D75DE2 /* Serialization.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9C61B9236D900D75DE2 /* Serialization.swift */; settings = {ASSET_TAGS = (); }; };
+		E292B9CE1B932F3200D75DE2 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9CC1B932F3200D75DE2 /* Extensions.swift */; settings = {ASSET_TAGS = (); }; };
+		E292B9CF1B932F3200D75DE2 /* PBXObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9CD1B932F3200D75DE2 /* PBXObject.swift */; settings = {ASSET_TAGS = (); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -30,6 +33,9 @@
 		E22195B11B7C6EDA00F58D3F /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		E262D4421B7E20CF0057CCEE /* project.pbxproj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.pbxproject; path = project.pbxproj; sourceTree = "<group>"; };
 		E262D4441B7E21190057CCEE /* XCProjectFile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = XCProjectFile.swift; path = ../Xcode/Xcode/XCProjectFile.swift; sourceTree = "<group>"; };
+		E292B9C61B9236D900D75DE2 /* Serialization.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Serialization.swift; path = ../Xcode/Xcode/Serialization.swift; sourceTree = "<group>"; };
+		E292B9CC1B932F3200D75DE2 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Extensions.swift; path = ../Xcode/Xcode/Extensions.swift; sourceTree = "<group>"; };
+		E292B9CD1B932F3200D75DE2 /* PBXObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PBXObject.swift; path = ../Xcode/Xcode/PBXObject.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,6 +86,9 @@
 		E262D4411B7E20AA0057CCEE /* Xcode.swift */ = {
 			isa = PBXGroup;
 			children = (
+				E292B9CC1B932F3200D75DE2 /* Extensions.swift */,
+				E292B9CD1B932F3200D75DE2 /* PBXObject.swift */,
+				E292B9C61B9236D900D75DE2 /* Serialization.swift */,
 				E262D4441B7E21190057CCEE /* XCProjectFile.swift */,
 			);
 			name = Xcode.swift;
@@ -142,8 +151,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E292B9CF1B932F3200D75DE2 /* PBXObject.swift in Sources */,
 				E262D4451B7E21190057CCEE /* XCProjectFile.swift in Sources */,
+				E292B9C71B9236D900D75DE2 /* Serialization.swift in Sources */,
 				E22195B21B7C6EDA00F58D3F /* main.swift in Sources */,
+				E292B9CE1B932F3200D75DE2 /* Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
