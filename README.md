@@ -10,6 +10,7 @@ Releases
 --------
 
  - **0.1.0** - 2015-09-28 - Initial public release
+ - **0.2.0** - 2015-10-29 - Adds serialization support
 
 
 Licence & Credits
