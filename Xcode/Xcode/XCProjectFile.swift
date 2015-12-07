@@ -29,19 +29,136 @@ public class AllObjects {
   var dict: [String: PBXObject] = [:]
   var fullFilePaths: [String: Path] = [:]
 
-  func object<T : PBXObject>(key: String) -> T {
+  func object<T where T : PBXObject>(key: String) -> T {
     let obj = dict[key]!
+
     if let t = obj as? T {
       return t
     }
 
-    return T(id: key, dict: obj.dict, allObjects: self)
+    fatalError("Unknown subtype of PBXObject: \(obj)")
+  }
+
+  func buildFile(key: String) -> PBXBuildFile {
+    return object(key) as BuildFile as PBXBuildFile
+  }
+
+  func buildPhase(key: String) -> PBXBuildPhase {
+    let obj = dict[key]!
+
+    if let phase = obj as? CopyFilesBuildPhase {
+      return phase
+    }
+
+    if let phase = obj as? FrameworksBuildPhase {
+      return phase
+    }
+
+    if let phase = obj as? HeadersBuildPhase {
+      return phase
+    }
+
+    if let phase = obj as? ResourcesBuildPhase {
+      return phase
+    }
+
+    if let phase = obj as? FrameworksBuildPhase {
+      return phase
+    }
+
+    if let phase = obj as? ShellScriptBuildPhase {
+      return phase
+    }
+
+    if let phase = obj as? SourcesBuildPhase {
+      return phase
+    }
+
+    fatalError("Unknown subtype of PBXBuildPhase: \(obj)")
+  }
+
+  func target(key: String) -> PBXTarget {
+    let obj = dict[key]!
+
+    if let aggregate = obj as? AggregateTarget {
+      return aggregate
+    }
+
+    if let native = obj as? NativeTarget {
+      return native
+    }
+
+    fatalError("Unknown subtype of PBXTarget: \(obj)")
+  }
+
+  func group(key: String) -> PBXGroup {
+    let obj = dict[key]!
+
+    if let variant = obj as? VariantGroup {
+      return variant
+    }
+
+    if let group = obj as? Group {
+      return group
+    }
+
+    fatalError("Unknown subtype of PBXGroup: \(obj)")
+  }
+
+  func reference(key: String) -> PBXReference {
+    let obj = dict[key]!
+
+    if let file = obj as? FileReference {
+      return file
+    }
+
+    if let variant = obj as? VariantGroup {
+      return variant
+    }
+
+    if let group = obj as? Group {
+      return group
+    }
+
+    if let group = obj as? VersionGroup {
+      return group
+    }
+
+    fatalError("Unknown subtype of PBXReference: \(obj)")
   }
 }
 
+enum AllObjectsError: ErrorType {
+  case FieldMissing(key: String)
+  case InvalidValue(key: String, value: String)
+  case ObjectMissing(key: String)
+}
+
+extension Dictionary {
+  func field<T>(keyString: String) throws -> T {
+    guard let key = keyString as? Key, val = self[key] as? T else {
+      throw AllObjectsError.FieldMissing(key: keyString)
+    }
+
+    return val
+  }
+
+  func optionalField<T>(keyString: String) -> T? {
+    guard let key = keyString as? Key else { return nil }
+
+    return self[key] as? T
+  }
+}
+
+protocol PropertyListEncodable : PBXObject {
+  init(id: String, fields: Fields, allObjects: AllObjects) throws
+}
+
+typealias Objects = [String: Fields]
+
 public class XCProjectFile {
   public let project: PBXProject
-  let dict: JsonObject
+  let fields: Fields
   let format: NSPropertyListFormat
   let allObjects = AllObjects()
 
@@ -61,25 +178,34 @@ public class XCProjectFile {
     var format: NSPropertyListFormat = NSPropertyListFormat.BinaryFormat_v1_0
     let obj = try NSPropertyListSerialization.propertyListWithData(data, options: options, format: &format)
 
-    guard let dict = obj as? JsonObject else {
+    guard let fields = obj as? Fields else {
       throw ProjectFileError.InvalidData
     }
 
-    self.init(dict: dict, format: format)
+    self.init(fields: fields, format: format)
   }
 
-  init(dict: JsonObject, format: NSPropertyListFormat) {
-    self.dict = dict
+  init(fields: Fields, format: NSPropertyListFormat) {
+    self.fields = fields
     self.format = format
-    let objects = dict["objects"] as! [String: JsonObject]
+    let rootObjectId = fields["rootObject"]! as! String
+    var objects = fields["objects"] as! Objects
+    let projDict = objects[rootObjectId]!
+    objects.removeValueForKey(rootObjectId)
 
-    for (key, obj) in objects {
-      allObjects.dict[key] = XCProjectFile.createObject(key, dict: obj, allObjects: allObjects)
+    for (key, obj) in orderedObjects(objects) {
+      do {
+        allObjects.dict[key] = try XCProjectFile.createObject(key, fields: obj, allObjects: allObjects)
+      }
+      catch {
+        print("\(obj["isa"]) \(key) error: \(error)")
+      }
     }
 
-    let rootObjectId = dict["rootObject"]! as! String
-    let projDict = objects[rootObjectId]!
-    self.project = PBXProject(id: rootObjectId, dict: projDict, allObjects: allObjects)
+    let project = try! Project(id: rootObjectId, fields: projDict, allObjects: allObjects)
+    allObjects.dict[rootObjectId] = project
+
+    self.project = project
     self.allObjects.fullFilePaths = paths(self.project.mainGroup, prefix: "")
   }
 
@@ -95,17 +221,18 @@ public class XCProjectFile {
     return last.substringToIndex(range.startIndex)
   }
 
-  static func createObject(id: String, dict: JsonObject, allObjects: AllObjects) -> PBXObject {
-    let isa = dict["isa"] as? String
+  static func createObject(id: String, fields: Fields, allObjects: AllObjects) throws -> PBXObject {
+    guard let isa = fields["isa"] as? String else {
+      throw AllObjectsError.FieldMissing(key: "isa")
+    }
 
-    if let isa = isa,
-       let type = types[isa] {
-      return type.init(id: id, dict: dict, allObjects: allObjects)
+    if let Type = types[isa] {
+      return try Type.init(id: id, fields: fields, allObjects: allObjects)
     }
 
     // Fallback
     assertionFailure("Unknown PBXObject subclass isa=\(isa)")
-    return PBXObject(id: id, dict: dict, allObjects: allObjects)
+    return try Object(id: id, fields: fields, allObjects: allObjects)
   }
 
   func paths(current: PBXGroup, prefix: String) -> [String: Path] {
@@ -136,25 +263,112 @@ public class XCProjectFile {
   }
 }
 
-let types: [String: PBXObject.Type] = [
-  "PBXProject": PBXProject.self,
-  "PBXContainerItemProxy": PBXContainerItemProxy.self,
-  "PBXBuildFile": PBXBuildFile.self,
-  "PBXCopyFilesBuildPhase": PBXCopyFilesBuildPhase.self,
-  "PBXFrameworksBuildPhase": PBXFrameworksBuildPhase.self,
-  "PBXHeadersBuildPhase": PBXHeadersBuildPhase.self,
-  "PBXResourcesBuildPhase": PBXResourcesBuildPhase.self,
-  "PBXShellScriptBuildPhase": PBXShellScriptBuildPhase.self,
-  "PBXSourcesBuildPhase": PBXSourcesBuildPhase.self,
-  "PBXBuildStyle": PBXBuildStyle.self,
-  "XCBuildConfiguration": XCBuildConfiguration.self,
-  "PBXAggregateTarget": PBXAggregateTarget.self,
-  "PBXNativeTarget": PBXNativeTarget.self,
-  "PBXTargetDependency": PBXTargetDependency.self,
-  "XCConfigurationList": XCConfigurationList.self,
-  "PBXReference": PBXReference.self,
-  "PBXFileReference": PBXFileReference.self,
-  "PBXGroup": PBXGroup.self,
-  "PBXVariantGroup": PBXVariantGroup.self,
-  "XCVersionGroup": XCVersionGroup.self
+func orderedObjects(objects: Objects) -> [(String, Fields)] {
+
+  let refs = deepReferences(objects)
+
+  var cache: [String: Int] = [:]
+  func depth(key: String) -> Int {
+    if let val = cache[key] {
+      return val
+    }
+
+    let val = refs[key]?.map(depth).maxElement().map { $0 + 1 } ?? 0
+    cache[key] = val
+
+    return val
+  }
+
+  // Pre compute cache
+  for key in refs.keys {
+    cache[key] = depth(key)
+  }
+
+//  let sorted = objects.sort { depth($0.0) < depth($1.0) }
+  let sorted = objects.sort { cache[$0.0]! < cache[$1.0]! }
+
+  return sorted
+}
+
+private func deepReferences(objects: Objects) -> [String: [String]] {
+  var result: [String: [String]] = [:]
+
+  for (id, obj) in objects {
+    result[id] = deepReferences(obj, objects: objects)
+  }
+
+  return result
+}
+
+private func deepReferences(obj: Fields, objects: Objects) -> [String] {
+  var result: [String] = []
+
+  for (_, field) in obj {
+    if let str = field as? String {
+      result += deepReferences(str, objects: objects)
+    }
+    if let arr = field as? [String] {
+      for str in arr {
+        result += deepReferences(str, objects: objects)
+      }
+    }
+  }
+
+  return result
+}
+
+private func deepReferences(key: String, objects: Objects) -> [String] {
+  guard let obj = objects[key] else { return [] }
+
+  var result = deepReferences(obj, objects: objects)
+  result.append(key)
+  return result
+}
+
+
+let typeOrder: [String] = [
+  "PBXObject",
+  "XCConfigurationList",
+  "PBXProject",
+  "PBXContainerItemProxy",
+  "PBXReference",
+  "PBXFileReference",
+  "PBXGroup",
+  "PBXVariantGroup",
+  "XCVersionGroup",
+  "PBXBuildFile",
+  "PBXCopyFilesBuildPhase",
+  "PBXFrameworksBuildPhase",
+  "PBXHeadersBuildPhase",
+  "PBXResourcesBuildPhase",
+  "PBXShellScriptBuildPhase",
+  "PBXSourcesBuildPhase",
+  "PBXBuildStyle",
+  "XCBuildConfiguration",
+  "PBXAggregateTarget",
+  "PBXNativeTarget",
+  "PBXTargetDependency",
+]
+
+let types: [String: PropertyListEncodable.Type] = [
+//  "PBXProject": PBXProject.self,
+  "PBXContainerItemProxy": ContainerItemProxy.self,
+  "PBXBuildFile": BuildFile.self,
+  "PBXCopyFilesBuildPhase": CopyFilesBuildPhase.self,
+  "PBXFrameworksBuildPhase": FrameworksBuildPhase.self,
+  "PBXHeadersBuildPhase": HeadersBuildPhase.self,
+  "PBXResourcesBuildPhase": ResourcesBuildPhase.self,
+  "PBXShellScriptBuildPhase": ShellScriptBuildPhase.self,
+  "PBXSourcesBuildPhase": SourcesBuildPhase.self,
+  "PBXBuildStyle": BuildStyle.self,
+  "XCBuildConfiguration": BuildConfiguration.self,
+  "PBXAggregateTarget": AggregateTarget.self,
+  "PBXNativeTarget": NativeTarget.self,
+  "PBXTargetDependency": TargetDependency.self,
+  "XCConfigurationList": ConfigurationList.self,
+  "PBXReference": Reference.self,
+  "PBXFileReference": FileReference.self,
+  "PBXGroup": Group.self,
+  "PBXVariantGroup": VariantGroup.self,
+  "XCVersionGroup": VersionGroup.self
 ]

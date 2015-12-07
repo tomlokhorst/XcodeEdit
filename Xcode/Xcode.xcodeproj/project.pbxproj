@@ -14,6 +14,7 @@
 		E292B9C51B9236B500D75DE2 /* Serialization.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9C41B9236B500D75DE2 /* Serialization.swift */; settings = {ASSET_TAGS = (); }; };
 		E292B9C91B92380300D75DE2 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9C81B92380300D75DE2 /* Extensions.swift */; settings = {ASSET_TAGS = (); }; };
 		E292B9CB1B92384B00D75DE2 /* PBXObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9CA1B92384B00D75DE2 /* PBXObject.swift */; settings = {ASSET_TAGS = (); }; };
+		E292B9D11B93ACD100D75DE2 /* Object.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9D01B93ACD100D75DE2 /* Object.swift */; settings = {ASSET_TAGS = (); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,6 +38,7 @@
 		E292B9C41B9236B500D75DE2 /* Serialization.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Serialization.swift; sourceTree = "<group>"; };
 		E292B9C81B92380300D75DE2 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		E292B9CA1B92384B00D75DE2 /* PBXObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PBXObject.swift; sourceTree = "<group>"; };
+		E292B9D01B93ACD100D75DE2 /* Object.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Object.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,6 +82,7 @@
 			isa = PBXGroup;
 			children = (
 				E292B9C81B92380300D75DE2 /* Extensions.swift */,
+				E292B9D01B93ACD100D75DE2 /* Object.swift */,
 				E292B9CA1B92384B00D75DE2 /* PBXObject.swift */,
 				E292B9C41B9236B500D75DE2 /* Serialization.swift */,
 				E21D919D1B7B1A5D00FD0374 /* Supporting Files */,
@@ -223,6 +226,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E292B9D11B93ACD100D75DE2 /* Object.swift in Sources */,
 				E292B9C51B9236B500D75DE2 /* Serialization.swift in Sources */,
 				E292B9C91B92380300D75DE2 /* Extensions.swift in Sources */,
 				E21D91B71B7B1A9000FD0374 /* XCProjectFile.swift in Sources */,

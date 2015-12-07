@@ -9,14 +9,18 @@
 import Foundation
 
 // The xcodeproj file to load, test this with your own project!
-let xcodeproj = NSURL(fileURLWithPath: "/Users/tom/Projects/Xcode.swift/Example/Test.xcodeproj")
+let xcodeproj = NSURL(fileURLWithPath: "/Users/tom/Projects/Xcode.swift-diff/Test.xcodeproj")
 
+let start = NSDate()
 
 // Load from a xcodeproj
 let proj = try! XCProjectFile(xcodeprojURL: xcodeproj)
 
 // Write out a new pbxproj file
 try! proj.writeToXcodeproj(xcodeprojURL: xcodeproj)
+
+let interval = NSDate().timeIntervalSinceDate(start)
+print("TIME: \(interval)")
 
 // Print paths for all files in Resources build phases
 for target in proj.project.targets {
@@ -38,7 +42,6 @@ for target in proj.project.targets {
 // Print shells
 for target in proj.project.targets {
   for buildPhase in target.buildPhases {
-    print(buildPhase)
     if let shellScriptPhase = buildPhase as? PBXShellScriptBuildPhase {
       print(shellScriptPhase.shellScript)
     }
