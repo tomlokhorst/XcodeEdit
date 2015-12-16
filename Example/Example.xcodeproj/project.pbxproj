@@ -33,11 +33,11 @@
 		E22195AE1B7C6EDA00F58D3F /* Example */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Example; sourceTree = BUILT_PRODUCTS_DIR; };
 		E22195B11B7C6EDA00F58D3F /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		E262D4421B7E20CF0057CCEE /* project.pbxproj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.pbxproject; path = project.pbxproj; sourceTree = "<group>"; };
-		E262D4441B7E21190057CCEE /* XCProjectFile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = XCProjectFile.swift; path = ../Xcode/Xcode/XCProjectFile.swift; sourceTree = "<group>"; };
-		E292B9C61B9236D900D75DE2 /* Serialization.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Serialization.swift; path = ../Xcode/Xcode/Serialization.swift; sourceTree = "<group>"; };
-		E292B9CC1B932F3200D75DE2 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Extensions.swift; path = ../Xcode/Xcode/Extensions.swift; sourceTree = "<group>"; };
-		E292B9CD1B932F3200D75DE2 /* PBXObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PBXObject.swift; path = ../Xcode/Xcode/PBXObject.swift; sourceTree = "<group>"; };
-		E2FCB7D81BE899A100FB866E /* Object.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Object.swift; path = ../Xcode/Xcode/Object.swift; sourceTree = "<group>"; };
+		E262D4441B7E21190057CCEE /* XCProjectFile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = XCProjectFile.swift; path = ../Sources/XCProjectFile.swift; sourceTree = "<group>"; };
+		E292B9C61B9236D900D75DE2 /* Serialization.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Serialization.swift; path = ../Sources/Serialization.swift; sourceTree = "<group>"; };
+		E292B9CC1B932F3200D75DE2 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Extensions.swift; path = ../Sources/Extensions.swift; sourceTree = "<group>"; };
+		E292B9CD1B932F3200D75DE2 /* PBXObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PBXObject.swift; path = ../Sources/PBXObject.swift; sourceTree = "<group>"; };
+		E2FCB7D81BE899A100FB866E /* Object.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Object.swift; path = ../Sources/Object.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
