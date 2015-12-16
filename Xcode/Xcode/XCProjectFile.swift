@@ -36,7 +36,7 @@ public class AllObjects {
       return t
     }
 
-    fatalError("Unknown subtype of PBXObject: \(obj)")
+    fatalError("Unknown PBXObject subclass isa=\(obj.isa)")
   }
 
   func buildFile(key: String) -> PBXBuildFile {
@@ -74,7 +74,13 @@ public class AllObjects {
       return phase
     }
 
-    fatalError("Unknown subtype of PBXBuildPhase: \(obj)")
+    // Fallback
+    assertionFailure("Unknown PBXBuildPhase subclass isa=\(obj.isa)")
+    if let phase = obj as? BuildPhase {
+      return phase
+    }
+
+    fatalError("Unknown PBXBuildPhase subclass isa=\(obj.isa)")
   }
 
   func target(key: String) -> PBXTarget {
@@ -88,7 +94,13 @@ public class AllObjects {
       return native
     }
 
-    fatalError("Unknown subtype of PBXTarget: \(obj)")
+    // Fallback
+    assertionFailure("Unknown PBXTarget subclass isa=\(obj.isa)")
+    if let target = obj as? Target {
+      return target
+    }
+
+    fatalError("Unknown PBXTarget subclass isa=\(obj.isa)")
   }
 
   func group(key: String) -> PBXGroup {
@@ -102,7 +114,7 @@ public class AllObjects {
       return group
     }
 
-    fatalError("Unknown subtype of PBXGroup: \(obj)")
+    fatalError("Unknown PBXGroup subclass isa=\(obj.isa)")
   }
 
   func reference(key: String) -> PBXReference {
@@ -124,7 +136,13 @@ public class AllObjects {
       return group
     }
 
-    fatalError("Unknown subtype of PBXReference: \(obj)")
+    // Fallback
+    assertionFailure("Unknown PBXReference subclass isa=\(obj.isa)")
+    if let reference = obj as? Reference {
+      return reference
+    }
+
+    fatalError("Unknown PBXReference subclass isa=\(obj.isa)")
   }
 }
 
@@ -134,8 +152,26 @@ enum AllObjectsError: ErrorType {
   case ObjectMissing(key: String)
 }
 
+typealias GuidKey = String
+
 extension Dictionary {
-  func field<T>(keyString: String) throws -> T {
+  internal func key(keyString: String) throws -> GuidKey {
+    guard let key = keyString as? Key, val = self[key] as? GuidKey else {
+      throw AllObjectsError.FieldMissing(key: keyString)
+    }
+
+    return val
+  }
+
+  internal func keys(keyString: String) throws -> [GuidKey] {
+    guard let key = keyString as? Key, val = self[key] as? [GuidKey] else {
+      throw AllObjectsError.FieldMissing(key: keyString)
+    }
+
+    return val
+  }
+
+  internal func field<T>(keyString: String) throws -> T {
     guard let key = keyString as? Key, val = self[key] as? T else {
       throw AllObjectsError.FieldMissing(key: keyString)
     }
@@ -143,7 +179,7 @@ extension Dictionary {
     return val
   }
 
-  func optionalField<T>(keyString: String) -> T? {
+  internal func optionalField<T>(keyString: String) -> T? {
     guard let key = keyString as? Key else { return nil }
 
     return self[key] as? T
@@ -230,9 +266,40 @@ public class XCProjectFile {
       return try Type.init(id: id, fields: fields, allObjects: allObjects)
     }
 
-    // Fallback
     assertionFailure("Unknown PBXObject subclass isa=\(isa)")
+
+    if let fallback = fallbackCreateObject(isa, id: id, fields: fields, allObjects: allObjects) {
+      return fallback
+    }
+
     return try Object(id: id, fields: fields, allObjects: allObjects)
+  }
+
+  private static func fallbackCreateObject(isa: String, id: String, fields: Fields, allObjects: AllObjects) -> PBXObject?
+  {
+    // Some heuristics for figuring out a fallback type
+
+    do {
+      if isa.hasSuffix("BuildPhase") {
+        return try BuildPhase(id: id, fields: fields, allObjects: allObjects)
+      }
+
+      if isa.hasSuffix("Target") {
+        return try Target(id: id, fields: fields, allObjects: allObjects)
+      }
+
+      if isa.hasSuffix("Reference") {
+        return try Reference(id: id, fields: fields, allObjects: allObjects)
+      }
+
+      if isa.hasSuffix("Group") {
+        return try Group(id: id, fields: fields, allObjects: allObjects)
+      }
+    }
+    catch {
+    }
+
+    return nil
   }
 
   func paths(current: PBXGroup, prefix: String) -> [String: Path] {

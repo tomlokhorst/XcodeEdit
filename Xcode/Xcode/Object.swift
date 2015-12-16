@@ -40,10 +40,10 @@ extension Project : PropertyListEncodable {
     self.id = id
     self.fields = fields
 
-    let targetKeys = try fields.field("targets") as [String]
+    let targetKeys = try fields.keys("targets")
     self.targets = targetKeys.map { key in allObjects.target(key) }
-    self.mainGroup = allObjects.group(try fields.field("mainGroup") as String)
-    self.buildConfigurationList = allObjects.object(try fields.field("buildConfigurationList") as String) as ConfigurationList
+    self.mainGroup = allObjects.group(try fields.key("mainGroup"))
+    self.buildConfigurationList = allObjects.object(try fields.key("buildConfigurationList")) as ConfigurationList
   }
 }
 
@@ -79,12 +79,31 @@ extension BuildFile : PropertyListEncodable {
     self.id = id
     self.fields = fields
 
-    if let fileRefKey = fileRefKey {
-      self.fileRef = allObjects.reference(fileRefKey)
-    }
-    else {
-      self.fileRef = nil
-    }
+    self.fileRef = fileRefKey.map { allObjects.reference($0) }
+  }
+}
+
+// Internal fallback for abstract PBXBuildPhase
+internal struct BuildPhase : PBXBuildPhase {
+  /* PBXObject fields */
+  internal let isa: String
+  internal let id: String
+  internal let fields: Fields
+
+  /* PBXBuildPhase fields */
+  internal let files: [PBXBuildFile]
+}
+
+extension BuildPhase : PropertyListEncodable {
+  init(id: String, fields: Fields, allObjects: AllObjects) throws {
+    let fileKeys = try fields.keys("files")
+    let files = fileKeys.map { key in allObjects.buildFile(key) }
+
+    self.isa = try fields.key("isa")
+    self.id = id
+    self.fields = fields
+
+    self.files = files
   }
 }
 
@@ -103,16 +122,14 @@ public struct CopyFilesBuildPhase : PBXCopyFilesBuildPhase {
 
 extension CopyFilesBuildPhase : PropertyListEncodable {
   init(id: String, fields: Fields, allObjects: AllObjects) throws {
-    let fileKeys = try fields.field("files") as [String]
-    let files = fileKeys.map { key in allObjects.buildFile(key) }
-    let name = try fields.field("name") as String
+    let buildPhase = try BuildPhase(id: id, fields: fields, allObjects: allObjects)
 
     self.id = id
     self.fields = fields
 
-    self.files = files
+    self.files = buildPhase.files
 
-    self.name = name
+    self.name = try fields.key("name")
   }
 }
 
@@ -128,13 +145,12 @@ public struct FrameworksBuildPhase : PBXFrameworksBuildPhase {
 
 extension FrameworksBuildPhase : PropertyListEncodable {
   init(id: String, fields: Fields, allObjects: AllObjects) throws {
-    let fileKeys = try fields.field("files") as [String]
-    let files = fileKeys.map { key in allObjects.buildFile(key) }
+    let buildPhase = try BuildPhase(id: id, fields: fields, allObjects: allObjects)
 
     self.id = id
     self.fields = fields
 
-    self.files = files
+    self.files = buildPhase.files
   }
 }
 
@@ -150,13 +166,12 @@ public struct HeadersBuildPhase : PBXHeadersBuildPhase {
 
 extension HeadersBuildPhase : PropertyListEncodable {
   init(id: String, fields: Fields, allObjects: AllObjects) throws {
-    let fileKeys = try fields.field("files") as [String]
-    let files = fileKeys.map { key in allObjects.buildFile(key) }
+    let buildPhase = try BuildPhase(id: id, fields: fields, allObjects: allObjects)
 
     self.id = id
     self.fields = fields
 
-    self.files = files
+    self.files = buildPhase.files
   }
 }
 
@@ -172,13 +187,12 @@ public struct ResourcesBuildPhase : PBXResourcesBuildPhase {
 
 extension ResourcesBuildPhase : PropertyListEncodable {
   init(id: String, fields: Fields, allObjects: AllObjects) throws {
-    let fileKeys = try fields.field("files") as [String]
-    let files = fileKeys.map { key in allObjects.buildFile(key) }
+    let buildPhase = try BuildPhase(id: id, fields: fields, allObjects: allObjects)
 
     self.id = id
     self.fields = fields
 
-    self.files = files
+    self.files = buildPhase.files
   }
 }
 
@@ -198,19 +212,15 @@ public struct ShellScriptBuildPhase : PBXShellScriptBuildPhase {
 
 extension ShellScriptBuildPhase : PropertyListEncodable {
   init(id: String, fields: Fields, allObjects: AllObjects) throws {
-    let filesKeys = try fields.field("files") as [String]
-    let files = filesKeys.map { key in allObjects.buildFile(key) }
-
-    let name = fields.optionalField("name") as String?
-    let shellScript = try fields.field("shellScript") as String
+    let buildPhase = try BuildPhase(id: id, fields: fields, allObjects: allObjects)
 
     self.id = id
     self.fields = fields
 
-    self.files = files
+    self.files = buildPhase.files
 
-    self.name = name
-    self.shellScript = shellScript
+    self.name = fields.optionalField("name") as String?
+    self.shellScript = try fields.field("shellScript") as String
   }
 }
 
@@ -226,13 +236,12 @@ public struct SourcesBuildPhase : PBXSourcesBuildPhase {
 
 extension SourcesBuildPhase : PropertyListEncodable {
   init(id: String, fields: Fields, allObjects: AllObjects) throws {
-    let filesKeys = try fields.field("files") as [String]
-    let files = filesKeys.map { key in allObjects.buildFile(key) }
+    let buildPhase = try BuildPhase(id: id, fields: fields, allObjects: allObjects)
 
     self.id = id
     self.fields = fields
 
-    self.files = files
+    self.files = buildPhase.files
   }
 }
 
@@ -272,6 +281,40 @@ extension BuildConfiguration : PropertyListEncodable {
   }
 }
 
+// Internal fallback for abstract PBXTarget
+internal struct Target : PBXTarget {
+  /* PBXObject fields */
+  internal let isa: String
+  internal let id: String
+  internal let fields: Fields
+
+  /* PBXTarget fields */
+  internal var buildConfigurationList: XCConfigurationList
+  internal var name: String
+  internal var productName: String
+  internal var buildPhases: [PBXBuildPhase]
+}
+
+extension Target : PropertyListEncodable {
+  init(id: String, fields: Fields, allObjects: AllObjects) throws {
+    let buildConfigurationListKey = try fields.key("buildConfigurationList")
+    let buildConfigurationList = allObjects.object(buildConfigurationListKey) as ConfigurationList
+    let name = try fields.field("name") as String
+    let productName = try fields.field("productName") as String
+    let buildPhasesKeys = try fields.keys("buildPhases")
+    let buildPhases = buildPhasesKeys.map { key in allObjects.buildPhase(key) }
+
+    self.isa = try fields.key("isa")
+    self.id = id
+    self.fields = fields
+
+    self.buildConfigurationList = buildConfigurationList
+    self.name = name
+    self.productName = productName
+    self.buildPhases = buildPhases
+  }
+}
+
 public struct AggregateTarget : PBXAggregateTarget {
   /* PBXObject fields */
   public let isa = "PBXAggregateTarget"
@@ -287,19 +330,15 @@ public struct AggregateTarget : PBXAggregateTarget {
 
 extension AggregateTarget : PropertyListEncodable {
   init(id: String, fields: Fields, allObjects: AllObjects) throws {
-    let buildConfigurationListKey = try fields.field("buildConfigurationList") as String
-    let name = try fields.field("name") as String
-    let productName = try fields.field("productName") as String
-    let buildPhasesKeys = try fields.field("buildPhases") as [String]
-    let buildPhases = buildPhasesKeys.map { key in allObjects.buildPhase(key) }
+    let target = try Target(id: id, fields: fields, allObjects: allObjects)
 
-    self.init(
-      id: id,
-      fields: fields,
-      buildConfigurationList: allObjects.object(buildConfigurationListKey) as ConfigurationList,
-      name: name,
-      productName: productName,
-      buildPhases: buildPhases)
+    self.id = id
+    self.fields = fields
+
+    self.buildConfigurationList = target.buildConfigurationList
+    self.name = target.name
+    self.productName = target.productName
+    self.buildPhases = target.buildPhases
   }
 }
 
@@ -318,19 +357,15 @@ public struct NativeTarget : PBXNativeTarget {
 
 extension NativeTarget : PropertyListEncodable {
   init(id: String, fields: Fields, allObjects: AllObjects) throws {
-    let buildConfigurationListKey = try fields.field("buildConfigurationList") as String
-    let name = try fields.field("name") as String
-    let productName = try fields.field("productName") as String
-    let buildPhasesKeys = try fields.field("buildPhases") as [String]
-    let buildPhases = buildPhasesKeys.map { key in allObjects.buildPhase(key) }
+    let target = try Target(id: id, fields: fields, allObjects: allObjects)
 
-    self.init(
-      id: id,
-      fields: fields,
-      buildConfigurationList: allObjects.object(buildConfigurationListKey) as ConfigurationList,
-      name: name,
-      productName: productName,
-      buildPhases: buildPhases)
+    self.id = id
+    self.fields = fields
+
+    self.buildConfigurationList = target.buildConfigurationList
+    self.name = target.name
+    self.productName = target.productName
+    self.buildPhases = target.buildPhases
   }
 }
 
@@ -412,17 +447,14 @@ public struct FileReference : PBXFileReference {
 
 extension FileReference : PropertyListEncodable {
   init(id: String, fields: Fields, allObjects: AllObjects) throws {
-    let name = fields.optionalField("name") as String?
-    let path = fields.optionalField("path") as String?
-    let sourceTreeString = try fields.field("sourceTree") as String
-    let sourceTree = try SourceTree(string: sourceTreeString)
+    let reference = try Reference(id: id, fields: fields, allObjects: allObjects)
 
     self.id = id
     self.fields = fields
 
-    self.name = name
-    self.path = path
-    self.sourceTree = sourceTree
+    self.name = reference.name
+    self.path = reference.path
+    self.sourceTree = reference.sourceTree
 
     self.allObjects = allObjects
   }
@@ -449,19 +481,16 @@ public struct Group : PBXGroup {
 
 extension Group : PropertyListEncodable {
   init(id: String, fields: Fields, allObjects: AllObjects) throws {
-    let name = fields.optionalField("name") as String?
-    let path = fields.optionalField("path") as String?
-    let sourceTreeString = try fields.field("sourceTree") as String
-    let sourceTree = try SourceTree(string: sourceTreeString)
-    let childrenKeys = try fields.field("children") as [String]
+    let reference = try Reference(id: id, fields: fields, allObjects: allObjects)
+    let childrenKeys = try fields.keys("children")
     let children = childrenKeys.map { key in allObjects.reference(key) }
 
     self.id = id
     self.fields = fields
 
-    self.name = name
-    self.path = path
-    self.sourceTree = sourceTree
+    self.name = reference.name
+    self.path = reference.path
+    self.sourceTree = reference.sourceTree
 
     self.children = children
   }
@@ -488,21 +517,16 @@ public struct VariantGroup : PBXVariantGroup {
 
 extension VariantGroup : PropertyListEncodable {
   init(id: String, fields: Fields, allObjects: AllObjects) throws {
-    let name = fields.optionalField("name") as String?
-    let path = fields.optionalField("path") as String?
-    let sourceTreeString = try fields.field("sourceTree") as String
-    let sourceTree = try SourceTree(string: sourceTreeString)
-    let childrenKeys = try fields.field("children") as [String]
-    let children = childrenKeys.map { key in allObjects.reference(key) }
+    let group = try Group(id: id, fields: fields, allObjects: allObjects)
 
     self.id = id
     self.fields = fields
 
-    self.name = name
-    self.path = path
-    self.sourceTree = sourceTree
+    self.name = group.name
+    self.path = group.path
+    self.sourceTree = group.sourceTree
 
-    self.children = children
+    self.children = group.children
   }
 }
 
@@ -520,17 +544,14 @@ public struct VersionGroup : XCVersionGroup {
 
 extension VersionGroup : PropertyListEncodable {
   init(id: String, fields: Fields, allObjects: AllObjects) throws {
-    let name = fields.optionalField("name") as String?
-    let path = fields.optionalField("path") as String?
-    let sourceTreeString = try fields.field("sourceTree") as String
-    let sourceTree = try SourceTree(string: sourceTreeString)
+    let reference = try Reference(id: id, fields: fields, allObjects: allObjects)
 
     self.id = id
     self.fields = fields
 
-    self.name = name
-    self.path = path
-    self.sourceTree = sourceTree
+    self.name = reference.name
+    self.path = reference.path
+    self.sourceTree = reference.sourceTree
   }
 }
 
