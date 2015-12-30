@@ -11,11 +11,11 @@ import Foundation
 let args = Process.arguments
 
 if args.count < 2 {
-  fatalError("Call with current directory: $SRCROOT")
+  print("Call with a .xcodeproj, e.g.: \"$SRCROOT/../Test projects/HelloCpp.xcodeproj\"")
 }
 
 // The xcodeproj file to load, test this with your own project!
-let xcodeproj = NSURL(fileURLWithPath: "\(args[1])/../Test projects/Security.xcodeproj")
+let xcodeproj = NSURL(fileURLWithPath: args[1])
 
 // Load from a xcodeproj
 let proj = try! XCProjectFile(xcodeprojURL: xcodeproj)
