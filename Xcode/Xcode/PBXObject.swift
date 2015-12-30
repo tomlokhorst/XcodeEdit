@@ -133,6 +133,12 @@ public class PBXFileReference : PBXReference {
   public lazy var fullPath: Path = self.allObjects.fullFilePaths[self.id]!
 }
 
+public class PBXReferenceProxy : PBXReference {
+
+  // convenience accessor
+  public lazy var remoteRef: PBXContainerItemProxy = self.object("remoteRef")
+}
+
 public class PBXGroup : PBXReference {
   public lazy var children: [PBXReference] = self.objects("children")
 

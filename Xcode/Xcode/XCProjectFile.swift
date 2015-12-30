@@ -153,6 +153,7 @@ let types: [String: PBXObject.Type] = [
   "PBXTargetDependency": PBXTargetDependency.self,
   "XCConfigurationList": XCConfigurationList.self,
   "PBXReference": PBXReference.self,
+  "PBXReferenceProxy": PBXReferenceProxy.self,
   "PBXFileReference": PBXFileReference.self,
   "PBXGroup": PBXGroup.self,
   "PBXVariantGroup": PBXVariantGroup.self,
