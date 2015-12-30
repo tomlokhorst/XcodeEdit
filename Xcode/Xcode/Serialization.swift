@@ -142,54 +142,45 @@ internal class Serializer {
     return lines.joinWithSeparator("\n")
   }
 
-  func comment(key: String, verbose: Bool) -> String? {
+  func comment(key: String) -> String? {
     if key == projectFile.project.id {
       return "Project object"
     }
 
     if let obj = projectFile.allObjects.dict[key] {
-      if let name = obj.dict["name"] as? String {
-        return name
-      }
-      if let path = obj.dict["path"] as? String {
-        return path
-      }
       if let ref = obj as? PBXReference {
         return ref.name ?? ref.path
       }
-      if let nativeTarget = obj as? PBXNativeTarget {
-        return verbose ? nativeTarget.name : nil
+      if let target = obj as? PBXTarget {
+        return target.name
       }
       if let config = obj as? XCBuildConfiguration {
         return config.name
       }
       if let copyFiles = obj as? PBXCopyFilesBuildPhase {
-        return copyFiles.name
+        return copyFiles.name ?? "CopyFiles"
       }
       if obj is PBXFrameworksBuildPhase {
         return "Frameworks"
       }
-      if obj is PBXSourcesBuildPhase {
-        return "Sources"
+      if obj is PBXHeadersBuildPhase {
+        return "Headers"
       }
       if obj is PBXResourcesBuildPhase {
         return "Resources"
       }
-      if obj is PBXShellScriptBuildPhase {
-        return "ShellScript"
-      }
-      if obj is PBXHeadersBuildPhase {
-        return "Headers"
-      }
       if let shellScript = obj as? PBXShellScriptBuildPhase {
-        return shellScript.name
+        return shellScript.name ?? "ShellScript"
+      }
+      if obj is PBXSourcesBuildPhase {
+        return "Sources"
       }
       if let buildFile = obj as? PBXBuildFile {
         if let buildPhase = buildPhaseByFileId[key],
-          let group = comment(buildPhase.id, verbose: verbose) {
+          let group = comment(buildPhase.id) {
 
           if let fileRefId = buildFile.fileRef?.id {
-            if let fileRef = comment(fileRefId, verbose: verbose) {
+            if let fileRef = comment(fileRefId) {
               return "\(fileRef) in \(group)"
             }
           }
@@ -240,7 +231,7 @@ internal class Serializer {
         let str = valStr(valItem)
 
         var extraComment = ""
-        if let c = comment(valItem, verbose: true) {
+        if let c = comment(valItem) {
           extraComment = " /* \(c) */"
         }
 
@@ -253,12 +244,41 @@ internal class Serializer {
         parts.append(");")
       }
       else {
-        let space = valArr.isEmpty ? "" : " "
-        parts.append(ps.joinWithSeparator("") + space + "); ")
+        parts.append(ps.map { $0 + " "}.joinWithSeparator("") + "); ")
       }
 
     }
-    else if let valObj = val as? [String: AnyObject] {
+    else if let valArr = val as? [JsonObject] {
+      parts.append("\(keyStr) = (")
+
+      for valObj in valArr {
+        if multiline {
+          parts.append("\t{")
+        }
+
+        for valKey in valObj.keys.sort() {
+          let valVal: AnyObject = valObj[valKey]!
+          let ps = objval(valKey, val: valVal, multiline: multiline)
+
+          if multiline {
+            for p in ps {
+              parts.append("\t\t\(p)")
+            }
+          }
+          else {
+            parts.append("\t" + ps.joinWithSeparator("") + "}; ")
+          }
+        }
+
+        if multiline {
+          parts.append("\t},")
+        }
+      }
+
+      parts.append(");")
+
+    }
+    else if let valObj = val as? JsonObject {
       parts.append("\(keyStr) = {")
 
       for valKey in valObj.keys.sort() {
@@ -284,7 +304,7 @@ internal class Serializer {
       let str = valStr("\(val)")
 
       var extraComment = "";
-      if let c = comment(str, verbose: false) {
+      if let c = comment(str) {
         extraComment = " /* \(c) */"
       }
 
@@ -323,7 +343,7 @@ internal class Serializer {
     }
 
     var objComment = ""
-    if let c = comment(objKey, verbose: true) {
+    if let c = comment(objKey) {
       objComment = " /* \(c) */"
     }
 
