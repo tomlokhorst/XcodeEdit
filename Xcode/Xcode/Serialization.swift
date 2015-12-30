@@ -178,6 +178,9 @@ internal class Serializer {
       if obj is PBXShellScriptBuildPhase {
         return "ShellScript"
       }
+      if obj is PBXHeadersBuildPhase {
+        return "Headers"
+      }
       if let shellScript = obj as? PBXShellScriptBuildPhase {
         return shellScript.name
       }
