@@ -8,9 +8,14 @@
 
 import Foundation
 
-// The xcodeproj file to load, test this with your own project!
-let xcodeproj = NSURL(fileURLWithPath: "/Users/tom/Projects/Xcode.swift/Example/Test.xcodeproj")
+let args = Process.arguments
 
+if args.count < 2 {
+  fatalError("Call with current directory: $SRCROOT")
+}
+
+// The xcodeproj file to load, test this with your own project!
+let xcodeproj = NSURL(fileURLWithPath: "\(args[1])/../Test projects/Security.xcodeproj")
 
 // Load from a xcodeproj
 let proj = try! XCProjectFile(xcodeprojURL: xcodeproj)
