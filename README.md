@@ -8,6 +8,20 @@ The main goal of this project is to generate `project.pbxproj` files in the lega
 Currently, this project is mostly used to support [R.swift](https://github.com/mac-cain13/R.swift).
 
 
+Usage
+-----
+
+This reads a xcodeproj file (possibly in XML format), and writes it back out in OpenStep format:
+
+```swift
+let xcodeproj = NSURL(fileURLWithPath: "Test.xcodeproj")
+
+let proj = try! XCProjectFile(xcodeprojURL: xcodeproj)
+
+try! proj.writeToXcodeproj(xcodeprojURL: xcodeproj, format: NSPropertyListFormat.OpenStepFormat)
+```
+
+
 Releases
 --------
 
