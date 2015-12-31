@@ -42,7 +42,7 @@ public class AllObjects {
 public class XCProjectFile {
   public let project: PBXProject
   let dict: JsonObject
-  let format: NSPropertyListFormat
+  var format: NSPropertyListFormat
   let allObjects = AllObjects()
 
   public convenience init(xcodeprojURL: NSURL) throws {

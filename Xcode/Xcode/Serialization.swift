@@ -10,7 +10,7 @@ import Foundation
 
 extension XCProjectFile {
 
-  public func writeToXcodeproj(xcodeprojURL url: NSURL) throws -> Bool {
+  public func writeToXcodeproj(xcodeprojURL url: NSURL, format: NSPropertyListFormat? = nil) throws -> Bool {
 
     try NSFileManager.defaultManager().createDirectoryAtURL(url, withIntermediateDirectories: true, attributes: nil)
 
@@ -18,13 +18,14 @@ extension XCProjectFile {
     let path = url.URLByAppendingPathComponent("project.pbxproj")
 
     let serializer = Serializer(projectName: name, projectFile: self)
+    let plformat = format ?? self.format
 
-    if format == NSPropertyListFormat.OpenStepFormat {
+    if plformat == NSPropertyListFormat.OpenStepFormat {
       try serializer.openStepSerialization.writeToURL(path, atomically: true, encoding: NSUTF8StringEncoding)
       return true
     }
     else {
-      let data = try NSPropertyListSerialization.dataWithPropertyList(dict, format: format, options: 0)
+      let data = try NSPropertyListSerialization.dataWithPropertyList(dict, format: plformat, options: 0)
       return data.writeToURL(path, atomically: true)
     }
   }
