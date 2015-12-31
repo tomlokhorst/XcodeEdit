@@ -120,6 +120,10 @@ public class AllObjects {
   func reference(key: String) -> PBXReference {
     let obj = dict[key]!
 
+    if let proxy = obj as? ReferenceProxy {
+      return proxy
+    }
+
     if let file = obj as? FileReference {
       return file
     }
@@ -399,6 +403,7 @@ let typeOrder: [String] = [
   "PBXProject",
   "PBXContainerItemProxy",
   "PBXReference",
+  "PBXReferenceProxy",
   "PBXFileReference",
   "PBXGroup",
   "PBXVariantGroup",
@@ -434,6 +439,7 @@ let types: [String: PropertyListEncodable.Type] = [
   "PBXTargetDependency": TargetDependency.self,
   "XCConfigurationList": ConfigurationList.self,
   "PBXReference": Reference.self,
+  "PBXReferenceProxy": ReferenceProxy.self,
   "PBXFileReference": FileReference.self,
   "PBXGroup": Group.self,
   "PBXVariantGroup": VariantGroup.self,

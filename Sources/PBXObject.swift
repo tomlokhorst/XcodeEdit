@@ -102,6 +102,11 @@ public protocol PBXFileReference : PBXReference {
   var fullPath: Path { get }
 }
 
+public protocol PBXReferenceProxy : PBXReference {
+
+  var remoteRef: PBXContainerItemProxy { get }
+}
+
 public protocol PBXGroup : PBXReference {
   var children: [PBXReference] { get }
 

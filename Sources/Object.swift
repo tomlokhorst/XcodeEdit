@@ -460,6 +460,37 @@ extension FileReference : PropertyListEncodable {
   }
 }
 
+public struct ReferenceProxy : PBXReferenceProxy {
+  /* PBXObject fields */
+  public let isa = "PBXReferenceProxy"
+  public let id: String
+  public let fields: Fields
+
+  /* PBXReference fields */
+  public var name: String?
+  public var path: String?
+  public var sourceTree: SourceTree
+
+  /* PBXFileReference fields */
+  public var remoteRef: PBXContainerItemProxy
+}
+
+extension ReferenceProxy : PropertyListEncodable {
+  init(id: String, fields: Fields, allObjects: AllObjects) throws {
+    let reference = try Reference(id: id, fields: fields, allObjects: allObjects)
+    let remoteRefKey = try fields.key("remoteRef")
+
+    self.id = id
+    self.fields = fields
+
+    self.name = reference.name
+    self.path = reference.path
+    self.sourceTree = reference.sourceTree
+
+    self.remoteRef = allObjects.object(remoteRefKey) as ContainerItemProxy
+  }
+}
+
 public struct Group : PBXGroup {
   /* PBXObject fields */
   public let isa = "PBXGroup"
