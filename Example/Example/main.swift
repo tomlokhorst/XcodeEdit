@@ -14,18 +14,23 @@ if args.count < 2 {
   print("Call with a .xcodeproj, e.g.: \"$SRCROOT/../Test projects/HelloCpp.xcodeproj\"")
 }
 
-let start = NSDate()
+var start = NSDate()
 // The xcodeproj file to load, test this with your own project!
 let xcodeproj = NSURL(fileURLWithPath: args[1])
 
 // Load from a xcodeproj
 let proj = try! XCProjectFile(xcodeprojURL: xcodeproj)
 
+var interval = NSDate().timeIntervalSinceDate(start)
+print("READ: \(interval)")
+start = NSDate()
+
 // Write out a new pbxproj file
 try! proj.writeToXcodeproj(xcodeprojURL: xcodeproj, format: NSPropertyListFormat.OpenStepFormat)
 
-let interval = NSDate().timeIntervalSinceDate(start)
-print("TIME: \(interval)")
+interval = NSDate().timeIntervalSinceDate(start)
+print("WRITE: \(interval)")
+
 
 // Print paths for all files in Resources build phases
 for target in proj.project.targets {

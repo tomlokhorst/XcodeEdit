@@ -129,7 +129,7 @@ extension CopyFilesBuildPhase : PropertyListEncodable {
 
     self.files = buildPhase.files
 
-    self.name = try fields.key("name")
+    self.name = fields.optionalField("name")
   }
 }
 

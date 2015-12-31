@@ -12,6 +12,7 @@
 		E292B9C71B9236D900D75DE2 /* Serialization.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9C61B9236D900D75DE2 /* Serialization.swift */; };
 		E292B9CE1B932F3200D75DE2 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9CC1B932F3200D75DE2 /* Extensions.swift */; };
 		E292B9CF1B932F3200D75DE2 /* PBXObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9CD1B932F3200D75DE2 /* PBXObject.swift */; };
+		E2F289161C308020007FA710 /* AllObjects.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2F289151C308020007FA710 /* AllObjects.swift */; };
 		E2FCB7D91BE899A100FB866E /* Object.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2FCB7D81BE899A100FB866E /* Object.swift */; };
 /* End PBXBuildFile section */
 
@@ -35,6 +36,7 @@
 		E292B9C61B9236D900D75DE2 /* Serialization.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Serialization.swift; path = ../Sources/Serialization.swift; sourceTree = "<group>"; };
 		E292B9CC1B932F3200D75DE2 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Extensions.swift; path = ../Sources/Extensions.swift; sourceTree = "<group>"; };
 		E292B9CD1B932F3200D75DE2 /* PBXObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PBXObject.swift; path = ../Sources/PBXObject.swift; sourceTree = "<group>"; };
+		E2F289151C308020007FA710 /* AllObjects.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AllObjects.swift; path = ../Sources/AllObjects.swift; sourceTree = "<group>"; };
 		E2FCB7D81BE899A100FB866E /* Object.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Object.swift; path = ../Sources/Object.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -77,8 +79,9 @@
 		E262D4411B7E20AA0057CCEE /* Xcode.swift */ = {
 			isa = PBXGroup;
 			children = (
-				E2FCB7D81BE899A100FB866E /* Object.swift */,
+				E2F289151C308020007FA710 /* AllObjects.swift */,
 				E292B9CC1B932F3200D75DE2 /* Extensions.swift */,
+				E2FCB7D81BE899A100FB866E /* Object.swift */,
 				E292B9CD1B932F3200D75DE2 /* PBXObject.swift */,
 				E292B9C61B9236D900D75DE2 /* Serialization.swift */,
 				E262D4441B7E21190057CCEE /* XCProjectFile.swift */,
@@ -148,6 +151,7 @@
 				E292B9C71B9236D900D75DE2 /* Serialization.swift in Sources */,
 				E22195B21B7C6EDA00F58D3F /* main.swift in Sources */,
 				E2FCB7D91BE899A100FB866E /* Object.swift in Sources */,
+				E2F289161C308020007FA710 /* AllObjects.swift in Sources */,
 				E292B9CE1B932F3200D75DE2 /* Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

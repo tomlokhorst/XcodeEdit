@@ -107,6 +107,9 @@ public protocol PBXReferenceProxy : PBXReference {
   var remoteRef: PBXContainerItemProxy { get }
 }
 
+public protocol XCVersionGroup : PBXReference {
+}
+
 public protocol PBXGroup : PBXReference {
   var children: [PBXReference] { get }
 
@@ -116,9 +119,6 @@ public protocol PBXGroup : PBXReference {
 }
 
 public protocol PBXVariantGroup : PBXGroup {
-}
-
-public protocol XCVersionGroup : PBXReference {
 }
 
 
