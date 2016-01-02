@@ -186,21 +186,39 @@ func orderedObjects(allObjects: Objects) -> [(String, Fields)] {
 }
 
 func groupedObjectsByType(allObjects: Objects) -> [Objects] {
-  var result: [Int : Objects] = [:]
+  var prefix: Objects = [:]
+  var references: Objects = [:]
+  var groups: Objects = [:]
+  var buildFiles: Objects = [:]
+  var suffix: Objects = [:]
 
   for (id, object) in allObjects {
     let isa = object["isa"] as! String
-    let group = typeGroups[isa] ?? 0
+    let group = typeGroups[isa] ?? .Prefix
 
-    if result[group] == nil {
-      result[group] = [id: object]
-    }
-    else {
-      result[group]![id] = object
+    switch group {
+    case .Prefix:
+      prefix[id] = object
+    case .Reference:
+      references[id] = object
+    case .Group:
+      groups[id] = object
+    case .BuildFile:
+      buildFiles[id] = object
+    case .Suffix:
+      suffix[id] = object
     }
   }
 
-  return result.sortBy { $0.0 }.map { $0.1 }
+  var result: [Objects] = []
+
+  result.append(prefix)
+  result.append(references)
+  result.append(groups)
+  result.append(buildFiles)
+  result.append(suffix)
+
+  return result
 }
 
 func orderedObjectsPerGroup(objects: Objects) -> [(String, Fields)] {
@@ -265,33 +283,40 @@ private func deepReferences(key: String, objects: Objects) -> [String] {
   return result
 }
 
-let typeGroups: [String: Int] = [
-  "PBXObject" : 10,
-  "XCConfigurationList" : 20,
-  "PBXProject" : 30,
-  "PBXContainerItemProxy" : 40,
-  "PBXReference" : 50,
-  "PBXReferenceProxy" : 50,
-  "PBXFileReference" : 50,
-  "XCVersionGroup" : 50,
-  "PBXGroup" : 60,
-  "PBXVariantGroup" : 60,
-  "PBXBuildFile" : 110,
-  "PBXCopyFilesBuildPhase" : 120,
-  "PBXFrameworksBuildPhase" : 130,
-  "PBXHeadersBuildPhase" : 140,
-  "PBXResourcesBuildPhase" : 150,
-  "PBXShellScriptBuildPhase" : 160,
-  "PBXSourcesBuildPhase" : 170,
-  "PBXBuildStyle" : 180,
-  "XCBuildConfiguration" : 190,
-  "PBXAggregateTarget" : 200,
-  "PBXNativeTarget" : 210,
-  "PBXTargetDependency" : 220,
+enum TypeGroup : Int {
+  case Prefix = 0
+  case Reference = 1
+  case Group = 2
+  case BuildFile = 3
+  case Suffix = 4
+}
+
+let typeGroups: [String: TypeGroup] = [
+  "PBXObject" : .Prefix,
+  "XCConfigurationList" : .Prefix,
+  "PBXProject" : .Prefix,
+  "PBXContainerItemProxy" : .Prefix,
+  "PBXReference" : .Reference,
+  "PBXReferenceProxy" : .Reference,
+  "PBXFileReference" : .Reference,
+  "XCVersionGroup" : .Reference,
+  "PBXGroup" : .Group,
+  "PBXVariantGroup" : .Group,
+  "PBXBuildFile" : .BuildFile,
+  "PBXCopyFilesBuildPhase" : .Suffix,
+  "PBXFrameworksBuildPhase" : .Suffix,
+  "PBXHeadersBuildPhase" : .Suffix,
+  "PBXResourcesBuildPhase" : .Suffix,
+  "PBXShellScriptBuildPhase" : .Suffix,
+  "PBXSourcesBuildPhase" : .Suffix,
+  "PBXBuildStyle" : .Suffix,
+  "XCBuildConfiguration" : .Suffix,
+  "PBXAggregateTarget" : .Suffix,
+  "PBXNativeTarget" : .Suffix,
+  "PBXTargetDependency" : .Suffix,
 ]
 
 let types: [String: PropertyListEncodable.Type] = [
-//  "PBXProject": PBXProject.self,
   "PBXContainerItemProxy": ContainerItemProxy.self,
   "PBXBuildFile": BuildFile.self,
   "PBXCopyFilesBuildPhase": CopyFilesBuildPhase.self,
