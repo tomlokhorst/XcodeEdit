@@ -1,6 +1,8 @@
 <img src="https://cloud.githubusercontent.com/assets/75655/10141830/f92646ca-660e-11e5-8e1e-40c90482ead0.png" width="175" alt="Xcode.swift">
 <hr>
 
+<a href="https://github.com/Carthage/Carthage"><img src="https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat" alt="Carthage compatible" /></a>
+
 Reading _and writing_ the the Xcode pbxproj file format, from Swift!
 
 The main goal of this project is to generate `project.pbxproj` files in the legacy OpenStep format used by Xcode. Using this, a project file can be modified without changing it to XML format and causing a huge git diff.
@@ -21,7 +23,11 @@ let proj = try! XCProjectFile(xcodeprojURL: xcodeproj)
 try! proj.writeToXcodeproj(xcodeprojURL: xcodeproj, format: NSPropertyListFormat.OpenStepFormat)
 ```
 
-
+Carthage
+--------
+```
+github "tomlokhorst/Xcode.swift"
+```
 Releases
 --------
 
