@@ -25,24 +25,16 @@ enum ProjectFileError : ErrorType, CustomStringConvertible {
   }
 }
 
-public class AllObjects {
-  var dict: [String: PBXObject] = [:]
-  var fullFilePaths: [String: Path] = [:]
-
-  func object<T : PBXObject>(key: String) -> T {
-    let obj = dict[key]!
-    if let t = obj as? T {
-      return t
-    }
-
-    return T(id: key, dict: obj.dict, allObjects: self)
-  }
+protocol PropertyListEncodable : PBXObject {
+  init(id: String, fields: Fields, allObjects: AllObjects) throws
 }
+
+typealias Objects = [String: Fields]
 
 public class XCProjectFile {
   public let project: PBXProject
-  let dict: JsonObject
-  var format: NSPropertyListFormat
+  let fields: Fields
+  let format: NSPropertyListFormat
   let allObjects = AllObjects()
 
   public convenience init(xcodeprojURL: NSURL) throws {
@@ -61,25 +53,34 @@ public class XCProjectFile {
     var format: NSPropertyListFormat = NSPropertyListFormat.BinaryFormat_v1_0
     let obj = try NSPropertyListSerialization.propertyListWithData(data, options: options, format: &format)
 
-    guard let dict = obj as? JsonObject else {
+    guard let fields = obj as? Fields else {
       throw ProjectFileError.InvalidData
     }
 
-    self.init(dict: dict, format: format)
+    self.init(fields: fields, format: format)
   }
 
-  init(dict: JsonObject, format: NSPropertyListFormat) {
-    self.dict = dict
+  init(fields: Fields, format: NSPropertyListFormat) {
+    self.fields = fields
     self.format = format
-    let objects = dict["objects"] as! [String: JsonObject]
+    let rootObjectId = fields["rootObject"]! as! String
+    var objects = fields["objects"] as! Objects
+    let projDict = objects[rootObjectId]!
+    objects.removeValueForKey(rootObjectId)
 
-    for (key, obj) in objects {
-      allObjects.dict[key] = XCProjectFile.createObject(key, dict: obj, allObjects: allObjects)
+    for (key, obj) in orderedObjects(objects) {
+      do {
+        allObjects.dict[key] = try XCProjectFile.createObject(key, fields: obj, allObjects: allObjects)
+      }
+      catch {
+        print("\(obj["isa"]) \(key) error: \(error)")
+      }
     }
 
-    let rootObjectId = dict["rootObject"]! as! String
-    let projDict = objects[rootObjectId]!
-    self.project = PBXProject(id: rootObjectId, dict: projDict, allObjects: allObjects)
+    let project = try! Project(id: rootObjectId, fields: projDict, allObjects: allObjects)
+    allObjects.dict[rootObjectId] = project
+
+    self.project = project
     self.allObjects.fullFilePaths = paths(self.project.mainGroup, prefix: "")
   }
 
@@ -95,17 +96,49 @@ public class XCProjectFile {
     return last.substringToIndex(range.startIndex)
   }
 
-  static func createObject(id: String, dict: JsonObject, allObjects: AllObjects) -> PBXObject {
-    let isa = dict["isa"] as? String
-
-    if let isa = isa,
-       let type = types[isa] {
-      return type.init(id: id, dict: dict, allObjects: allObjects)
+  static func createObject(id: String, fields: Fields, allObjects: AllObjects) throws -> PBXObject {
+    guard let isa = fields["isa"] as? String else {
+      throw AllObjectsError.FieldMissing(key: "isa")
     }
 
-    // Fallback
+    if let Type = types[isa] {
+      return try Type.init(id: id, fields: fields, allObjects: allObjects)
+    }
+
     assertionFailure("Unknown PBXObject subclass isa=\(isa)")
-    return PBXObject(id: id, dict: dict, allObjects: allObjects)
+
+    if let fallback = fallbackCreateObject(isa, id: id, fields: fields, allObjects: allObjects) {
+      return fallback
+    }
+
+    return try Object(id: id, fields: fields, allObjects: allObjects)
+  }
+
+  private static func fallbackCreateObject(isa: String, id: String, fields: Fields, allObjects: AllObjects) -> PBXObject?
+  {
+    // Some heuristics for figuring out a fallback type
+
+    do {
+      if isa.hasSuffix("BuildPhase") {
+        return try BuildPhase(id: id, fields: fields, allObjects: allObjects)
+      }
+
+      if isa.hasSuffix("Target") {
+        return try Target(id: id, fields: fields, allObjects: allObjects)
+      }
+
+      if isa.hasSuffix("Reference") {
+        return try Reference(id: id, fields: fields, allObjects: allObjects)
+      }
+
+      if isa.hasSuffix("Group") {
+        return try Group(id: id, fields: fields, allObjects: allObjects)
+      }
+    }
+    catch {
+    }
+
+    return nil
   }
 
   func paths(current: PBXGroup, prefix: String) -> [String: Path] {
@@ -135,27 +168,3 @@ public class XCProjectFile {
     return ps
   }
 }
-
-let types: [String: PBXObject.Type] = [
-  "PBXProject": PBXProject.self,
-  "PBXContainerItemProxy": PBXContainerItemProxy.self,
-  "PBXBuildFile": PBXBuildFile.self,
-  "PBXCopyFilesBuildPhase": PBXCopyFilesBuildPhase.self,
-  "PBXFrameworksBuildPhase": PBXFrameworksBuildPhase.self,
-  "PBXHeadersBuildPhase": PBXHeadersBuildPhase.self,
-  "PBXResourcesBuildPhase": PBXResourcesBuildPhase.self,
-  "PBXShellScriptBuildPhase": PBXShellScriptBuildPhase.self,
-  "PBXSourcesBuildPhase": PBXSourcesBuildPhase.self,
-  "PBXBuildStyle": PBXBuildStyle.self,
-  "XCBuildConfiguration": XCBuildConfiguration.self,
-  "PBXAggregateTarget": PBXAggregateTarget.self,
-  "PBXNativeTarget": PBXNativeTarget.self,
-  "PBXTargetDependency": PBXTargetDependency.self,
-  "XCConfigurationList": XCConfigurationList.self,
-  "PBXReference": PBXReference.self,
-  "PBXReferenceProxy": PBXReferenceProxy.self,
-  "PBXFileReference": PBXFileReference.self,
-  "PBXGroup": PBXGroup.self,
-  "PBXVariantGroup": PBXVariantGroup.self,
-  "XCVersionGroup": XCVersionGroup.self
-]

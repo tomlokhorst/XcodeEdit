@@ -25,7 +25,7 @@ extension XCProjectFile {
       return true
     }
     else {
-      let data = try NSPropertyListSerialization.dataWithPropertyList(dict, format: plformat, options: 0)
+      let data = try NSPropertyListSerialization.dataWithPropertyList(fields, format: plformat, options: 0)
       return data.writeToURL(path, atomically: true)
     }
   }
@@ -38,7 +38,7 @@ extension XCProjectFile {
       return serializer.openStepSerialization.dataUsingEncoding(NSUTF8StringEncoding)!
     }
     else {
-      return try NSPropertyListSerialization.dataWithPropertyList(dict, format: format, options: 0)
+      return try NSPropertyListSerialization.dataWithPropertyList(fields, format: format, options: 0)
     }
   }
 }
@@ -62,8 +62,8 @@ internal class Serializer {
     self.projectFile = projectFile
   }
 
-  lazy var targetsByConfigId: [String: PBXNativeTarget] = {
-    var dict: [String: PBXNativeTarget] = [:]
+  lazy var targetsByConfigId: [String: PBXTarget] = {
+    var dict: [String: PBXTarget] = [:]
     for target in self.projectFile.project.targets {
       dict[target.buildConfigurationList.id] = target
     }
@@ -91,8 +91,8 @@ internal class Serializer {
       "{",
     ]
 
-    for key in projectFile.dict.keys.sort() {
-      let val: AnyObject = projectFile.dict[key]!
+    for key in projectFile.fields.keys.sort() {
+      let val: AnyObject = projectFile.fields[key]!
 
       if key == "objects" {
 
@@ -110,7 +110,7 @@ internal class Serializer {
 
             let multiline = isa != "PBXBuildFile" && isa != "PBXFileReference"
 
-            let parts = rows(isa, objKey: object.id, multiline: multiline, dict: object.dict)
+            let parts = rows(isa, objKey: object.id, multiline: multiline, fields: object.fields)
             if multiline {
               for ln in parts {
                 lines.append("\t\t" + ln)
@@ -249,7 +249,7 @@ internal class Serializer {
       }
 
     }
-    else if let valArr = val as? [JsonObject] {
+    else if let valArr = val as? [Fields] {
       parts.append("\(keyStr) = (")
 
       for valObj in valArr {
@@ -279,7 +279,7 @@ internal class Serializer {
       parts.append(");")
 
     }
-    else if let valObj = val as? JsonObject {
+    else if let valObj = val as? Fields {
       parts.append("\(keyStr) = {")
 
       for valKey in valObj.keys.sort() {
@@ -324,7 +324,7 @@ internal class Serializer {
     return parts
   }
 
-  func rows(type: String, objKey: String, multiline: Bool, dict: JsonObject) -> [String] {
+  func rows(type: String, objKey: String, multiline: Bool, fields: Fields) -> [String] {
 
     var parts: [String] = []
     if multiline {
@@ -334,9 +334,8 @@ internal class Serializer {
       parts.append("isa = \(type); ")
     }
 
-    for key in dict.keys.sort() {
+    for (key, val) in fields.sortBy({ $0.0 }) {
       if key == "isa" { continue }
-      let val: AnyObject = dict[key]!
 
       for p in objval(key, val: val, multiline: multiline) {
         parts.append(p)
@@ -365,3 +364,4 @@ internal class Serializer {
     }
   }
 }
+
