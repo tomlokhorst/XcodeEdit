@@ -130,7 +130,7 @@ public class PBXReference : PBXContainerItem {
 public class PBXFileReference : PBXReference {
 
   // convenience accessor
-  public lazy var fullPath: Path = self.allObjects.fullFilePaths[self.id]!
+  public lazy var fullPath: Path? = self.allObjects.fullFilePaths[self.id]
 }
 
 public class PBXGroup : PBXReference {
