@@ -99,8 +99,8 @@ internal class Serializer {
         lines.append("\tobjects = {")
 
         let groupedObjects = projectFile.allObjects.dict.values
+          .sortBy { $0.isa }
           .groupBy { $0.isa }
-          .sortBy { $0.0 }
 
         for (isa, objects) in groupedObjects {
           lines.append("")

@@ -29,16 +29,32 @@ extension SequenceType {
     return false
   }
 
-  func groupBy<Key: Hashable>(keySelector: Generator.Element -> Key) -> [Key : [Generator.Element]] {
-    var groupedBy = Dictionary<Key, [Generator.Element]>()
+  /// Groups by keySelector of subsequent elements
+  func groupBy<Key: Hashable>(keySelector: Generator.Element -> Key) -> [(Key, [Generator.Element])] {
+    var groupedBy: [(Key, [Generator.Element])] = []
+    var currentKey: Key?
+    var currentGroup: [Generator.Element] = []
 
     for element in self {
       let key = keySelector(element)
-      if let group = groupedBy[key] {
-        groupedBy[key] = group + [element]
-      } else {
-        groupedBy[key] = [element]
+
+      if let _currentKey = currentKey {
+        if key != _currentKey {
+          groupedBy.append((_currentKey, currentGroup))
+
+          currentGroup = []
+          currentKey = key
+        }
       }
+      else {
+        currentKey = key
+      }
+
+      currentGroup.append(element)
+    }
+
+    if let _currentKey = currentKey {
+      groupedBy.append((_currentKey, currentGroup))
     }
 
     return groupedBy
