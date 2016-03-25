@@ -265,14 +265,10 @@ func orderedObjectsPerGroup(objects: Objects) -> [(String, Fields)] {
     return depth
   }
 
-  for (id, obj) in objects {
-    computeDepths(id, obj: obj)
-  }
-
   let sorted = objects
-    .map { (depth: depths[$0.0] ?? 0, object: $0) }
+    .map { (depth: computeDepths($0.0, obj: $0.1), value: $0) }
     .sort { $0.depth < $1.depth }
-    .map { $0.object }
+    .map { $0.value }
 
   return sorted
 }

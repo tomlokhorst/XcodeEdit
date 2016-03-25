@@ -31,7 +31,7 @@ try! proj.writeToXcodeproj(xcodeprojURL: xcodeproj, format: NSPropertyListFormat
 interval = NSDate().timeIntervalSinceDate(start)
 print("WRITE: \(interval)")
 
-
+/*
 // Print paths for all files in Resources build phases
 for target in proj.project.targets {
   for resourcesBuildPhase in target.buildPhases.ofType(PBXResourcesBuildPhase.self) {
@@ -57,4 +57,4 @@ for target in proj.project.targets {
     }
   }
 }
-
+*/
