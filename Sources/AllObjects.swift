@@ -223,62 +223,60 @@ func groupedObjectsByType(allObjects: Objects) -> [Objects] {
 
 func orderedObjectsPerGroup(objects: Objects) -> [(String, Fields)] {
 
-  let refs = deepReferences(objects)
+  var depths: [String: Int] = [:]
 
-  var cache: [String: Int] = [:]
-  func depth(key: String) -> Int {
-    if let val = cache[key] {
-      return val
+  func computeDepths(key: String, obj: Fields) -> Int {
+
+    if let depth = depths[key] {
+      return depth
     }
 
-    let val = refs[key]?.map(depth).maxElement().map { $0 + 1 } ?? 0
-    cache[key] = val
+    var maxDepth : Int?
 
-    return val
+    for (_, field) in obj {
+      if let str = field as? String {
+        if let obj = objects[str] {
+
+          let depth = computeDepths(str, obj: obj)
+          maxDepth = max(depth, maxDepth ?? 0)
+        }
+      }
+      if let arr = field as? [String] {
+        for str in arr {
+          if let obj = objects[str] {
+
+            let depth = computeDepths(str, obj: obj)
+            maxDepth = max(depth, maxDepth ?? 0)
+          }
+        }
+      }
+    }
+
+
+    let depth: Int
+    if let maxDepth = maxDepth {
+      depth = maxDepth + 1
+    }
+    else {
+      depth = 0
+    }
+
+    depths[key] = depth
+    return depth
+  }
+
+  for (id, obj) in objects {
+    computeDepths(id, obj: obj)
   }
 
   let sorted = objects
-    .map { (depth: depth($0.0), object: $0) }
+    .map { (depth: depths[$0.0] ?? 0, object: $0) }
     .sort { $0.depth < $1.depth }
     .map { $0.object }
 
   return sorted
 }
 
-private func deepReferences(objects: Objects) -> [String: [String]] {
-  var result: [String: [String]] = [:]
-
-  for (id, obj) in objects {
-    result[id] = deepReferences(obj, objects: objects)
-  }
-
-  return result
-}
-
-private func deepReferences(obj: Fields, objects: Objects) -> [String] {
-  var result: [String] = []
-
-  for (_, field) in obj {
-    if let str = field as? String {
-      result += deepReferences(str, objects: objects)
-    }
-    if let arr = field as? [String] {
-      for str in arr {
-        result += deepReferences(str, objects: objects)
-      }
-    }
-  }
-
-  return result
-}
-
-private func deepReferences(key: String, objects: Objects) -> [String] {
-  guard let obj = objects[key] else { return [] }
-
-  var result = deepReferences(obj, objects: objects)
-  result.append(key)
-  return result
-}
 
 enum TypeGroup : Int {
   case Prefix = 0
