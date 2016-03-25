@@ -237,13 +237,10 @@ func orderedObjectsPerGroup(objects: Objects) -> [(String, Fields)] {
     return val
   }
 
-  // Pre compute cache
-  for key in refs.keys {
-    cache[key] = depth(key)
-  }
-
-  //  let sorted = objects.sort { depth($0.0) < depth($1.0) }
-  let sorted = objects.sort { cache[$0.0]! < cache[$1.0]! }
+  let sorted = objects
+    .map { (depth: depth($0.0), object: $0) }
+    .sort { $0.depth < $1.depth }
+    .map { $0.object }
 
   return sorted
 }
