@@ -99,14 +99,15 @@ internal class Serializer {
         lines.append("\tobjects = {")
 
         let groupedObjects = projectFile.allObjects.dict.values
-          .sortBy { $0.isa }
+          .sort { $0.isa < $1.isa }
           .groupBy { $0.isa }
 
         for (isa, objects) in groupedObjects {
           lines.append("")
           lines.append("/* Begin \(isa) section */")
 
-          for object in objects.sortBy({ $0.id }) {
+          let sortedObjects = objects.sort { $0.id < $1.id }
+          for object in sortedObjects {
 
             let multiline = isa != "PBXBuildFile" && isa != "PBXFileReference"
 
@@ -208,8 +209,12 @@ internal class Serializer {
     var str = val
     for (replacement, regex) in specialRegexes {
       let range = NSRange(location: 0, length: str.utf16.count)
-      let template = NSRegularExpression.escapedTemplateForString(replacement)
-      str = regex.stringByReplacingMatchesInString(str, options: [], range: range, withTemplate: template)
+      let matches = regex.matchesInString(str, options: [], range: range)
+
+      if !matches.isEmpty {
+        let template = NSRegularExpression.escapedTemplateForString(replacement)
+        str = regex.stringByReplacingMatchesInString(str, options: [], range: range, withTemplate: template)
+      }
     }
 
     let range = NSRange(location: 0, length: str.utf16.count)
