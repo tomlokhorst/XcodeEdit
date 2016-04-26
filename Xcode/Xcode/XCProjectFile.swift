@@ -115,7 +115,12 @@ public class XCProjectFile {
     for file in current.fileRefs {
       switch file.sourceTree {
       case .Group:
-        ps[file.id] = .RelativeTo(.SourceRoot, prefix + "/" + file.path!)
+        switch current.sourceTree {
+        case .Absolute:
+            ps[file.id] = .Absolute(prefix + "/" + file.path!)
+        default:
+            ps[file.id] = .RelativeTo(.SourceRoot, prefix + "/" + file.path!)
+        }
       case .Absolute:
         ps[file.id] = .Absolute(file.path!)
       case let .RelativeTo(sourceTreeFolder):
@@ -125,7 +130,19 @@ public class XCProjectFile {
 
     for group in current.subGroups {
       if let path = group.path {
-        ps += paths(group, prefix: prefix + "/" + path)
+        
+        let str : String
+        switch group.sourceTree {
+        case .Absolute:
+            str = path
+        case .Group:
+            str = prefix + "/" + path
+        case .RelativeTo(.SourceRoot):
+            str = "/" + path
+        default:
+            str = prefix + "/" + path //use old strategy
+        }
+        ps += paths(group, prefix: str)
       }
       else {
         ps += paths(group, prefix: prefix)
@@ -134,6 +151,7 @@ public class XCProjectFile {
 
     return ps
   }
+    
 }
 
 let types: [String: PBXObject.Type] = [
