@@ -42,7 +42,7 @@ public class AllObjects {
 public class XCProjectFile {
   public let project: PBXProject
   let dict: JsonObject
-  let format: NSPropertyListFormat
+  var format: NSPropertyListFormat
   let allObjects = AllObjects()
 
   public convenience init(xcodeprojURL: NSURL) throws {
@@ -179,6 +179,7 @@ let types: [String: PBXObject.Type] = [
   "PBXTargetDependency": PBXTargetDependency.self,
   "XCConfigurationList": XCConfigurationList.self,
   "PBXReference": PBXReference.self,
+  "PBXReferenceProxy": PBXReferenceProxy.self,
   "PBXFileReference": PBXFileReference.self,
   "PBXGroup": PBXGroup.self,
   "PBXVariantGroup": PBXVariantGroup.self,

@@ -23,8 +23,25 @@ public /* abstract */ class PBXObject {
     self.allObjects = allObjects
   }
 
+  func bool(key: String) -> Bool? {
+    guard let string = dict[key] as? String else { return nil }
+
+    switch string {
+    case "0":
+      return false
+    case "1":
+      return true
+    default:
+      return nil
+    }
+  }
+
   func string(key: String) -> String? {
     return dict[key] as? String
+  }
+
+  func strings(key: String) -> [String]? {
+    return dict[key] as? [String]
   }
 
   func object<T : PBXObject>(key: String) -> T? {
@@ -51,6 +68,9 @@ public /* abstract */ class PBXContainer : PBXObject {
 }
 
 public class PBXProject : PBXContainer {
+  public lazy var developmentRegion: String = self.string("developmentRegion")!
+  public lazy var hasScannedForEncodings: Bool = self.bool("hasScannedForEncodings")!
+  public lazy var knownRegions: [String] = self.strings("knownRegions")!
   public lazy var targets: [PBXNativeTarget] = self.objects("targets")
   public lazy var mainGroup: PBXGroup = self.object("mainGroup")
   public lazy var buildConfigurationList: XCConfigurationList = self.object("buildConfigurationList")
@@ -131,6 +151,12 @@ public class PBXFileReference : PBXReference {
 
   // convenience accessor
   public lazy var fullPath: Path = self.allObjects.fullFilePaths[self.id]!
+}
+
+public class PBXReferenceProxy : PBXReference {
+
+  // convenience accessor
+  public lazy var remoteRef: PBXContainerItemProxy = self.object("remoteRef")
 }
 
 public class PBXGroup : PBXReference {

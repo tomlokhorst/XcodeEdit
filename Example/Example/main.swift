@@ -8,15 +8,20 @@
 
 import Foundation
 
-// The xcodeproj file to load, test this with your own project!
-let xcodeproj = NSURL(fileURLWithPath: "/Users/tom/Projects/Xcode.swift/Example/Test.xcodeproj")
+let args = Process.arguments
 
+if args.count < 2 {
+  print("Call with a .xcodeproj, e.g.: \"$SRCROOT/../Test projects/HelloCpp.xcodeproj\"")
+}
+
+// The xcodeproj file to load, test this with your own project!
+let xcodeproj = NSURL(fileURLWithPath: args[1])
 
 // Load from a xcodeproj
 let proj = try! XCProjectFile(xcodeprojURL: xcodeproj)
 
 // Write out a new pbxproj file
-try! proj.writeToXcodeproj(xcodeprojURL: xcodeproj)
+try! proj.writeToXcodeproj(xcodeprojURL: xcodeproj, format: NSPropertyListFormat.OpenStepFormat)
 
 // Print paths for all files in Resources build phases
 for target in proj.project.targets {
