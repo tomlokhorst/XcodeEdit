@@ -25,6 +25,7 @@ try! proj.writeToXcodeproj(xcodeprojURL: xcodeproj, format: NSPropertyListFormat
 Releases
 --------
 
+ - **0.3.0** - 2016-04-27 - Fixes to SourceTreeFolder
  - 0.2.1 - 2015-12-30 - Add missing PBXProxyReference class
  - **0.2.0** - 2015-10-29 - Adds serialization support
  - **0.1.0** - 2015-09-28 - Initial public release
