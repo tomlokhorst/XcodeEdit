@@ -10,9 +10,9 @@
 		E22195B21B7C6EDA00F58D3F /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22195B11B7C6EDA00F58D3F /* main.swift */; };
 		E262D4431B7E20DB0057CCEE /* project.pbxproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = E262D4421B7E20CF0057CCEE /* project.pbxproj */; };
 		E262D4451B7E21190057CCEE /* XCProjectFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E262D4441B7E21190057CCEE /* XCProjectFile.swift */; };
-		E292B9C71B9236D900D75DE2 /* Serialization.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9C61B9236D900D75DE2 /* Serialization.swift */; settings = {ASSET_TAGS = (); }; };
-		E292B9CE1B932F3200D75DE2 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9CC1B932F3200D75DE2 /* Extensions.swift */; settings = {ASSET_TAGS = (); }; };
-		E292B9CF1B932F3200D75DE2 /* PBXObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9CD1B932F3200D75DE2 /* PBXObject.swift */; settings = {ASSET_TAGS = (); }; };
+		E292B9C71B9236D900D75DE2 /* Serialization.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9C61B9236D900D75DE2 /* Serialization.swift */; };
+		E292B9CE1B932F3200D75DE2 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9CC1B932F3200D75DE2 /* Extensions.swift */; };
+		E292B9CF1B932F3200D75DE2 /* PBXObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9CD1B932F3200D75DE2 /* PBXObject.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -57,7 +57,10 @@
 				E262D4411B7E20AA0057CCEE /* Xcode.swift */,
 				E22195AF1B7C6EDA00F58D3F /* Products */,
 			);
+			indentWidth = 2;
 			sourceTree = "<group>";
+			tabWidth = 2;
+			usesTabs = 0;
 		};
 		E22195AF1B7C6EDA00F58D3F /* Products */ = {
 			isa = PBXGroup;

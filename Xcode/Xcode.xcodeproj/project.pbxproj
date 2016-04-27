@@ -11,9 +11,9 @@
 		E21D91A61B7B1A5D00FD0374 /* Xcode.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E21D919A1B7B1A5D00FD0374 /* Xcode.framework */; };
 		E21D91AD1B7B1A5D00FD0374 /* XcodeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21D91AC1B7B1A5D00FD0374 /* XcodeTests.swift */; };
 		E21D91B71B7B1A9000FD0374 /* XCProjectFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21D91B61B7B1A9000FD0374 /* XCProjectFile.swift */; };
-		E292B9C51B9236B500D75DE2 /* Serialization.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9C41B9236B500D75DE2 /* Serialization.swift */; settings = {ASSET_TAGS = (); }; };
-		E292B9C91B92380300D75DE2 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9C81B92380300D75DE2 /* Extensions.swift */; settings = {ASSET_TAGS = (); }; };
-		E292B9CB1B92384B00D75DE2 /* PBXObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9CA1B92384B00D75DE2 /* PBXObject.swift */; settings = {ASSET_TAGS = (); }; };
+		E292B9C51B9236B500D75DE2 /* Serialization.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9C41B9236B500D75DE2 /* Serialization.swift */; };
+		E292B9C91B92380300D75DE2 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9C81B92380300D75DE2 /* Extensions.swift */; };
+		E292B9CB1B92384B00D75DE2 /* PBXObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9CA1B92384B00D75DE2 /* PBXObject.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,7 +65,10 @@
 				E21D91A91B7B1A5D00FD0374 /* XcodeTests */,
 				E21D919B1B7B1A5D00FD0374 /* Products */,
 			);
+			indentWidth = 2;
 			sourceTree = "<group>";
+			tabWidth = 2;
+			usesTabs = 0;
 		};
 		E21D919B1B7B1A5D00FD0374 /* Products */ = {
 			isa = PBXGroup;
