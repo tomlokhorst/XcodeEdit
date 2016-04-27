@@ -117,9 +117,11 @@ public class XCProjectFile {
       case .Group:
         switch current.sourceTree {
         case .Absolute:
-            ps[file.id] = .Absolute(prefix + "/" + file.path!)
-        default:
-            ps[file.id] = .RelativeTo(.SourceRoot, prefix + "/" + file.path!)
+          ps[file.id] = .Absolute(prefix + "/" + file.path!)
+        case .Group:
+          ps[file.id] = .RelativeTo(.SourceRoot, prefix + "/" + file.path!)
+        case .RelativeTo(let sourceTreeFolder):
+          ps[file.id] = .RelativeTo(sourceTreeFolder, prefix + "/" + file.path!)
         }
       case .Absolute:
         ps[file.id] = .Absolute(file.path!)
@@ -131,17 +133,23 @@ public class XCProjectFile {
     for group in current.subGroups {
       if let path = group.path {
         
-        let str : String
+        let str: String
+
         switch group.sourceTree {
         case .Absolute:
-            str = path
+          str = path
         case .Group:
-            str = prefix + "/" + path
+          str = prefix + "/" + path
         case .RelativeTo(.SourceRoot):
-            str = "/" + path
-        default:
-            str = prefix + "/" + path //use old strategy
+          str = path
+        case .RelativeTo(.BuildProductsDir):
+          str = path
+        case .RelativeTo(.DeveloperDir):
+          str = path
+        case .RelativeTo(.SDKRoot):
+          str = path
         }
+
         ps += paths(group, prefix: str)
       }
       else {
