@@ -118,8 +118,18 @@ public class PBXSourcesBuildPhase : PBXBuildPhase {
 public class PBXBuildStyle : PBXProjectItem {
 }
 
+public class BuildSettings {
+
+  let sdkRoot: String
+
+  init(object: [String: AnyObject]) {
+    self.sdkRoot = object["SDKROOT"] as! String
+  }
+}
+
 public class XCBuildConfiguration : PBXBuildStyle {
   public lazy var name: String = self.string("name")!
+  public lazy var buildSettings: BuildSettings = BuildSettings(object: self.dict["buildSettings"] as! [String: AnyObject])
 }
 
 public /* abstract */ class PBXTarget : PBXProjectItem {
@@ -139,6 +149,7 @@ public class PBXTargetDependency : PBXProjectItem {
 }
 
 public class XCConfigurationList : PBXProjectItem {
+  public lazy var buildConfigurations: [XCBuildConfiguration] = self.objects("buildConfigurations")
 }
 
 public class PBXReference : PBXContainerItem {
