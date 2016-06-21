@@ -15,7 +15,9 @@ extension XCProjectFile {
     try NSFileManager.defaultManager().createDirectoryAtURL(url, withIntermediateDirectories: true, attributes: nil)
 
     let name = try XCProjectFile.projectName(url)
-    let path = url.URLByAppendingPathComponent("project.pbxproj")
+    guard let path = url.URLByAppendingPathComponent("project.pbxproj", isDirectory: false) else {
+      throw ProjectFileError.MissingPbxproj
+    }
 
     let serializer = Serializer(projectName: name, projectFile: self)
     let plformat = format ?? self.format

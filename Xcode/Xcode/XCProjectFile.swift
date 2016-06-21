@@ -47,8 +47,9 @@ public class XCProjectFile {
 
   public convenience init(xcodeprojURL: NSURL) throws {
 
-    let pbxprojURL = xcodeprojURL.URLByAppendingPathComponent("project.pbxproj")
-    guard let data = NSData(contentsOfURL: pbxprojURL) else {
+
+    guard let pbxprojURL = xcodeprojURL.URLByAppendingPathComponent("project.pbxproj", isDirectory: false),
+              data = NSData(contentsOfURL: pbxprojURL) else {
       throw ProjectFileError.MissingPbxproj
     }
 
