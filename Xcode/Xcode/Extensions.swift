@@ -8,18 +8,18 @@
 
 import Foundation
 
-func += <KeyType, ValueType> (inout left: Dictionary<KeyType, ValueType>, right: Dictionary<KeyType, ValueType>) {
+func += <KeyType, ValueType> (left: inout Dictionary<KeyType, ValueType>, right: Dictionary<KeyType, ValueType>) {
   for (k, v) in right {
     left.updateValue(v, forKey: k)
   }
 }
 
-extension SequenceType {
-  func ofType<T>(type: T.Type) -> [T] {
+extension Sequence {
+  func ofType<T>(_ type: T.Type) -> [T] {
     return self.flatMap { $0 as? T }
   }
 
-  func any(pred: Generator.Element -> Bool) -> Bool {
+  func any(_ pred: (Iterator.Element) -> Bool) -> Bool {
     for elem in self {
       if pred(elem) {
         return true
@@ -29,8 +29,8 @@ extension SequenceType {
     return false
   }
 
-  func groupBy<Key: Hashable>(keySelector: Generator.Element -> Key) -> [Key : [Generator.Element]] {
-    var groupedBy = Dictionary<Key, [Generator.Element]>()
+  func groupBy<Key: Hashable>(_ keySelector: (Iterator.Element) -> Key) -> [Key : [Iterator.Element]] {
+    var groupedBy = Dictionary<Key, [Iterator.Element]>()
 
     for element in self {
       let key = keySelector(element)
@@ -44,7 +44,7 @@ extension SequenceType {
     return groupedBy
   }
 
-  func sortBy<U: Comparable>(keySelector: Generator.Element -> U) -> [Generator.Element] {
-    return self.sort { keySelector($0) < keySelector($1) }
+  func sortBy<U: Comparable>(_ keySelector: (Iterator.Element) -> U) -> [Iterator.Element] {
+    return self.sorted { keySelector($0) < keySelector($1) }
   }
 }

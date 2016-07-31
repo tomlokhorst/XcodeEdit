@@ -23,7 +23,7 @@ public /* abstract */ class PBXObject {
     self.allObjects = allObjects
   }
 
-  func bool(key: String) -> Bool? {
+  func bool(_ key: String) -> Bool? {
     guard let string = dict[key] as? String else { return nil }
 
     switch string {
@@ -36,15 +36,15 @@ public /* abstract */ class PBXObject {
     }
   }
 
-  func string(key: String) -> String? {
+  func string(_ key: String) -> String? {
     return dict[key] as? String
   }
 
-  func strings(key: String) -> [String]? {
+  func strings(_ key: String) -> [String]? {
     return dict[key] as? [String]
   }
 
-  func object<T : PBXObject>(key: String) -> T? {
+  func object<T : PBXObject>(_ key: String) -> T? {
     guard let objectKey = dict[key] as? String else {
       return nil
     }
@@ -53,12 +53,12 @@ public /* abstract */ class PBXObject {
     return obj
   }
 
-  func object<T : PBXObject>(key: String) -> T {
+  func object<T : PBXObject>(_ key: String) -> T {
     let objectKey = dict[key] as! String
     return allObjects.object(objectKey)
   }
 
-  func objects<T : PBXObject>(key: String) -> [T] {
+  func objects<T : PBXObject>(_ key: String) -> [T] {
     let objectKeys = dict[key] as! [String]
     return objectKeys.map(allObjects.object)
   }
@@ -164,7 +164,7 @@ public class PBXGroup : PBXReference {
 
   // convenience accessors
   public lazy var subGroups: [PBXGroup] = self.children.ofType(PBXGroup.self)
-  public lazy var fileRefs: [PBXFileReference] = self.children.ofType(PBXFileReference)
+  public lazy var fileRefs: [PBXFileReference] = self.children.ofType(PBXFileReference.self)
 }
 
 public class PBXVariantGroup : PBXGroup {
@@ -175,32 +175,34 @@ public class XCVersionGroup : PBXReference {
 
 
 public enum SourceTree {
-  case Absolute
-  case Group
-  case RelativeTo(SourceTreeFolder)
+  case absolute
+  case group
+  case relativeTo(SourceTreeFolder)
 
   init?(sourceTreeString: String) {
     switch sourceTreeString {
     case "<absolute>":
-      self = .Absolute
+      self = .absolute
+
     case "<group>":
-      self = .Group
+      self = .group
+
     default:
       guard let sourceTreeFolder = SourceTreeFolder(rawValue: sourceTreeString) else { return nil }
-      self = .RelativeTo(sourceTreeFolder)
+      self = .relativeTo(sourceTreeFolder)
     }
   }
 }
 
 public enum SourceTreeFolder: String {
-  case SourceRoot = "SOURCE_ROOT"
-  case BuildProductsDir = "BUILT_PRODUCTS_DIR"
-  case DeveloperDir = "DEVELOPER_DIR"
-  case SDKRoot = "SDKROOT"
+  case sourceRoot = "SOURCE_ROOT"
+  case buildProductsDir = "BUILT_PRODUCTS_DIR"
+  case developerDir = "DEVELOPER_DIR"
+  case sdkRoot = "SDKROOT"
 }
 
 public enum Path {
-  case Absolute(String)
-  case RelativeTo(SourceTreeFolder, String)
+  case absolute(String)
+  case relativeTo(SourceTreeFolder, String)
 }
 
