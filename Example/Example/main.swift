@@ -21,7 +21,7 @@ let xcodeproj = URL(fileURLWithPath: args[1])
 let proj = try! XCProjectFile(xcodeprojURL: xcodeproj)
 
 // Write out a new pbxproj file
-try! proj.writeToXcodeproj(xcodeprojURL: xcodeproj, format: PropertyListSerialization.PropertyListFormat.openStep)
+try! proj.write(to: xcodeproj, format: PropertyListSerialization.PropertyListFormat.openStep)
 
 // Print paths for all files in Resources build phases
 for target in proj.project.targets {
