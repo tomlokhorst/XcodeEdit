@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum ProjectFileError : ErrorProtocol, CustomStringConvertible {
+enum ProjectFileError : Error, CustomStringConvertible {
   case invalidData
   case notXcodeproj
   case missingPbxproj
@@ -37,7 +37,7 @@ public class AllObjects {
       return t
     }
 
-    return T(id: key, dict: obj.dict, allObjects: self)
+    return T(id: key, dict: obj.dict as AnyObject, allObjects: self)
   }
 }
 
@@ -48,7 +48,7 @@ public class XCProjectFile {
   let allObjects = AllObjects()
 
   public convenience init(xcodeprojURL: URL) throws {
-    let pbxprojURL = try xcodeprojURL.appendingPathComponent("project.pbxproj", isDirectory: false)
+    let pbxprojURL = xcodeprojURL.appendingPathComponent("project.pbxproj", isDirectory: false)
     let data = try Data(contentsOf: pbxprojURL)
 
     try self.init(propertyListData: data)
@@ -78,14 +78,14 @@ public class XCProjectFile {
 
     let rootObjectId = dict["rootObject"]! as! String
     let projDict = objects[rootObjectId]!
-    self.project = PBXProject(id: rootObjectId, dict: projDict, allObjects: allObjects)
+    self.project = PBXProject(id: rootObjectId, dict: projDict as AnyObject, allObjects: allObjects)
     self.allObjects.fullFilePaths = paths(self.project.mainGroup, prefix: "")
   }
 
   static func projectName(from url: URL) throws -> String {
 
-    guard let subpaths = url.pathComponents,
-          let last = subpaths.last,
+    let subpaths = url.pathComponents
+    guard let last = subpaths.last,
           let range = last.range(of: ".xcodeproj")
     else {
       throw ProjectFileError.notXcodeproj
@@ -99,12 +99,12 @@ public class XCProjectFile {
 
     if let isa = isa,
        let type = types[isa] {
-      return type.init(id: id, dict: dict, allObjects: allObjects)
+      return type.init(id: id, dict: dict as AnyObject, allObjects: allObjects)
     }
 
     // Fallback
     assertionFailure("Unknown PBXObject subclass isa=\(isa)")
-    return PBXObject(id: id, dict: dict, allObjects: allObjects)
+    return PBXObject(id: id, dict: dict as AnyObject, allObjects: allObjects)
   }
 
   func paths(_ current: PBXGroup, prefix: String) -> [String: Path] {

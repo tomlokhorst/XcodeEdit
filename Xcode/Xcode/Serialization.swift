@@ -15,7 +15,7 @@ extension XCProjectFile {
     try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
 
     let name = try XCProjectFile.projectName(from: url)
-    let path = try url.appendingPathComponent("project.pbxproj", isDirectory: false)
+    let path = url.appendingPathComponent("project.pbxproj", isDirectory: false)
 
     let serializer = Serializer(projectName: name, projectFile: self)
     let plformat = format ?? self.format
@@ -42,13 +42,13 @@ extension XCProjectFile {
   }
 }
 
-let nonescapeRegex = try! RegularExpression(pattern: "^[a-z0-9_\\.\\/]+$", options: RegularExpression.Options.caseInsensitive)
+let nonescapeRegex = try! NSRegularExpression(pattern: "^[a-z0-9_\\.\\/]+$", options: NSRegularExpression.Options.caseInsensitive)
 let specialRegexes = [
-  "\\\\": try! RegularExpression(pattern: "\\\\", options: []),
-  "\\\"": try! RegularExpression(pattern: "\"", options: []),
-  "\\n": try! RegularExpression(pattern: "\\n", options: []),
-  "\\r": try! RegularExpression(pattern: "\\r", options: []),
-  "\\t": try! RegularExpression(pattern: "\\t", options: []),
+  "\\\\": try! NSRegularExpression(pattern: "\\\\", options: []),
+  "\\\"": try! NSRegularExpression(pattern: "\"", options: []),
+  "\\n": try! NSRegularExpression(pattern: "\\n", options: []),
+  "\\r": try! NSRegularExpression(pattern: "\\r", options: []),
+  "\\t": try! NSRegularExpression(pattern: "\\t", options: []),
 ]
 
 internal class Serializer {
@@ -207,7 +207,7 @@ internal class Serializer {
     var str = val
     for (replacement, regex) in specialRegexes {
       let range = NSRange(location: 0, length: str.utf16.count)
-      let template = RegularExpression.escapedTemplate(for: replacement)
+      let template = NSRegularExpression.escapedTemplate(for: replacement)
       str = regex.stringByReplacingMatches(in: str, options: [], range: range, withTemplate: template)
     }
 
