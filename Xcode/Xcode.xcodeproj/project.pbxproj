@@ -33,10 +33,10 @@
 		E21D91A51B7B1A5D00FD0374 /* XcodeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = XcodeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E21D91AB1B7B1A5D00FD0374 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E21D91AC1B7B1A5D00FD0374 /* XcodeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XcodeTests.swift; sourceTree = "<group>"; };
-		E21D91B61B7B1A9000FD0374 /* XCProjectFile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XCProjectFile.swift; sourceTree = "<group>"; };
-		E292B9C41B9236B500D75DE2 /* Serialization.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Serialization.swift; sourceTree = "<group>"; };
-		E292B9C81B92380300D75DE2 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
-		E292B9CA1B92384B00D75DE2 /* PBXObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PBXObject.swift; sourceTree = "<group>"; };
+		E21D91B61B7B1A9000FD0374 /* XCProjectFile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = XCProjectFile.swift; path = ../../Sources/Xcode/XCProjectFile.swift; sourceTree = "<group>"; };
+		E292B9C41B9236B500D75DE2 /* Serialization.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Serialization.swift; path = ../../Sources/Xcode/Serialization.swift; sourceTree = "<group>"; };
+		E292B9C81B92380300D75DE2 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Extensions.swift; path = ../../Sources/Xcode/Extensions.swift; sourceTree = "<group>"; };
+		E292B9CA1B92384B00D75DE2 /* PBXObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PBXObject.swift; path = ../../Sources/Xcode/PBXObject.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
