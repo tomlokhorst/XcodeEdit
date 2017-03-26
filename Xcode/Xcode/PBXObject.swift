@@ -204,5 +204,17 @@ public enum SourceTreeFolder: String {
 public enum Path {
   case absolute(String)
   case relativeTo(SourceTreeFolder, String)
+
+  public func url(with urlForSourceTreeFolder: (SourceTreeFolder) -> URL) -> URL {
+    switch self {
+    case let .absolute(absolutePath):
+      return URL(fileURLWithPath: absolutePath).standardizedFileURL
+
+    case let .relativeTo(sourceTreeFolder, relativePath):
+      let sourceTreeURL = urlForSourceTreeFolder(sourceTreeFolder)
+      return sourceTreeURL.appendingPathComponent(relativePath).standardizedFileURL
+    }
+  }
+
 }
 
