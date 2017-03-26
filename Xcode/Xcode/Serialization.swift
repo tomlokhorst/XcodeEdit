@@ -29,7 +29,7 @@ extension XCProjectFile {
     }
   }
 
-  public func serialize(_ projectName: String) throws -> Data {
+  public func serialized(projectName: String) throws -> Data {
 
     let serializer = Serializer(projectName: projectName, projectFile: self)
 
@@ -98,18 +98,18 @@ internal class Serializer {
         lines.append("\tobjects = {")
 
         let groupedObjects = projectFile.allObjects.dict.values
-          .groupBy { $0.isa }
-          .sortBy { $0.0 }
+          .grouped { $0.isa }
+          .sorted { $0.0 }
 
         for (isa, objects) in groupedObjects {
           lines.append("")
           lines.append("/* Begin \(isa) section */")
 
-          for object in objects.sortBy({ $0.id }) {
+          for object in objects.sorted(by: { $0.id }) {
 
             let multiline = isa != "PBXBuildFile" && isa != "PBXFileReference"
 
-            let parts = rows(isa, objKey: object.id, multiline: multiline, dict: object.dict)
+            let parts = rows(type: isa, objKey: object.id, multiline: multiline, dict: object.dict)
             if multiline {
               for ln in parts {
                 lines.append("\t\t" + ln)
@@ -142,7 +142,7 @@ internal class Serializer {
     return lines.joined(separator: "\n")
   }
 
-  func comment(_ key: String) -> String? {
+  func comment(forKey key: String) -> String? {
     if key == projectFile.project.id {
       return "Project object"
     }
@@ -177,10 +177,10 @@ internal class Serializer {
       }
       if let buildFile = obj as? PBXBuildFile {
         if let buildPhase = buildPhaseByFileId[key],
-          let group = comment(buildPhase.id) {
+          let group = comment(forKey: buildPhase.id) {
 
           if let fileRefId = buildFile.fileRef?.id {
-            if let fileRef = comment(fileRefId) {
+            if let fileRef = comment(forKey: fileRefId) {
               return "\(fileRef) in \(group)"
             }
           }
@@ -219,7 +219,7 @@ internal class Serializer {
     return "\"\(str)\""
   }
 
-  func objval(_ key: String, val: AnyObject, multiline: Bool) -> [String] {
+  func objval(key: String, val: AnyObject, multiline: Bool) -> [String] {
     var parts: [String] = []
     let keyStr = valStr(key)
 
@@ -231,7 +231,7 @@ internal class Serializer {
         let str = valStr(valItem)
 
         var extraComment = ""
-        if let c = comment(valItem) {
+        if let c = comment(forKey: valItem) {
           extraComment = " /* \(c) */"
         }
 
@@ -258,7 +258,7 @@ internal class Serializer {
 
         for valKey in valObj.keys.sorted() {
           let valVal: AnyObject = valObj[valKey]!
-          let ps = objval(valKey, val: valVal, multiline: multiline)
+          let ps = objval(key: valKey, val: valVal, multiline: multiline)
 
           if multiline {
             for p in ps {
@@ -283,7 +283,7 @@ internal class Serializer {
 
       for valKey in valObj.keys.sorted() {
         let valVal: AnyObject = valObj[valKey]!
-        let ps = objval(valKey, val: valVal, multiline: multiline)
+        let ps = objval(key: valKey, val: valVal, multiline: multiline)
 
         if multiline {
           for p in ps {
@@ -304,7 +304,7 @@ internal class Serializer {
       let str = valStr("\(val)")
 
       var extraComment = "";
-      if let c = comment(str) {
+      if let c = comment(forKey: str) {
         extraComment = " /* \(c) */"
       }
 
@@ -323,7 +323,7 @@ internal class Serializer {
     return parts
   }
 
-  func rows(_ type: String, objKey: String, multiline: Bool, dict: JsonObject) -> [String] {
+  func rows(type: String, objKey: String, multiline: Bool, dict: JsonObject) -> [String] {
 
     var parts: [String] = []
     if multiline {
@@ -337,13 +337,13 @@ internal class Serializer {
       if key == "isa" { continue }
       let val: AnyObject = dict[key]!
 
-      for p in objval(key, val: val, multiline: multiline) {
+      for p in objval(key: key, val: val, multiline: multiline) {
         parts.append(p)
       }
     }
 
     var objComment = ""
-    if let c = comment(objKey) {
+    if let c = comment(forKey: objKey) {
       objComment = " /* \(c) */"
     }
 

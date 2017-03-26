@@ -29,7 +29,7 @@ extension Sequence {
     return false
   }
 
-  func groupBy<Key: Hashable>(_ keySelector: (Iterator.Element) -> Key) -> [Key : [Iterator.Element]] {
+  func grouped<Key: Hashable>(by keySelector: (Iterator.Element) -> Key) -> [Key : [Iterator.Element]] {
     var groupedBy = Dictionary<Key, [Iterator.Element]>()
 
     for element in self {
@@ -44,7 +44,7 @@ extension Sequence {
     return groupedBy
   }
 
-  func sortBy<U: Comparable>(_ keySelector: (Iterator.Element) -> U) -> [Iterator.Element] {
+  func sorted<U: Comparable>(by keySelector: (Iterator.Element) -> U) -> [Iterator.Element] {
     return self.sorted { keySelector($0) < keySelector($1) }
   }
 }
