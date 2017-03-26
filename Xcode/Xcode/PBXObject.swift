@@ -118,8 +118,42 @@ public class PBXSourcesBuildPhase : PBXBuildPhase {
 public class PBXBuildStyle : PBXProjectItem {
 }
 
+public class BuildSettings {
+
+  let ASSETCATALOG_COMPILER_APPICON_NAME: String?
+  let CLANG_ANALYZER_NONNULL: Bool?
+  let DEBUG_INFORMATION_FORMAT: String?
+  let EMBEDDED_CONTENT_CONTAINS_SWIFT: Bool?
+  let IBSC_MODULE: String?
+  let INFOPLIST_FILE: String?
+  let PRODUCT_BUNDLE_IDENTIFIER: String?
+  let PRODUCT_NAME: String?
+  let SDKROOT: String?
+  let SKIP_INSTALL: Bool?
+  let TARGETED_DEVICE_FAMILY: String?
+  let WATCHOS_DEPLOYMENT_TARGET: String?
+  let IPHONEOS_DEPLOYMENT_TARGET: String?
+
+  init(object: [String: AnyObject]) {
+    self.ASSETCATALOG_COMPILER_APPICON_NAME = object["ASSETCATALOG_COMPILER_APPICON_NAME"] as? String
+    self.CLANG_ANALYZER_NONNULL = (object["CLANG_ANALYZER_NONNULL"] as? String).map { $0 == "YES" }
+    self.DEBUG_INFORMATION_FORMAT = object["DEBUG_INFORMATION_FORMAT"] as? String
+    self.EMBEDDED_CONTENT_CONTAINS_SWIFT = (object["EMBEDDED_CONTENT_CONTAINS_SWIFT"] as? String).map { $0 == "YES" }
+    self.IBSC_MODULE = object["IBSC_MODULE"] as? String
+    self.INFOPLIST_FILE = object["INFOPLIST_FILE"] as? String
+    self.PRODUCT_BUNDLE_IDENTIFIER = object["PRODUCT_BUNDLE_IDENTIFIER"] as? String
+    self.PRODUCT_NAME = object["PRODUCT_NAME"] as? String
+    self.SDKROOT = object["SDKROOT"] as? String
+    self.SKIP_INSTALL = (object["SKIP_INSTALL"] as? String).map { $0 == "YES" }
+    self.TARGETED_DEVICE_FAMILY = object["TARGETED_DEVICE_FAMILY"] as? String
+    self.WATCHOS_DEPLOYMENT_TARGET = object["WATCHOS_DEPLOYMENT_TARGET"] as? String
+    self.IPHONEOS_DEPLOYMENT_TARGET = object["IPHONEOS_DEPLOYMENT_TARGET"] as? String
+  }
+}
+
 public class XCBuildConfiguration : PBXBuildStyle {
   public lazy var name: String = self.string("name")!
+  public lazy var buildSettings: BuildSettings = BuildSettings(object: self.dict["buildSettings"] as! [String: AnyObject])
 }
 
 public /* abstract */ class PBXTarget : PBXProjectItem {
@@ -139,6 +173,7 @@ public class PBXTargetDependency : PBXProjectItem {
 }
 
 public class XCConfigurationList : PBXProjectItem {
+  public lazy var buildConfigurations: [XCBuildConfiguration] = self.objects("buildConfigurations")
 }
 
 public class PBXReference : PBXContainerItem {
