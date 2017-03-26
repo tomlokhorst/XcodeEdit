@@ -8,7 +8,7 @@
 
 import Foundation
 
-let args = Process.arguments
+let args = CommandLine.arguments
 
 if args.count < 2 {
   print("Call with a .xcodeproj, e.g.: \"$SRCROOT/../Test projects/HelloCpp.xcodeproj\"")
