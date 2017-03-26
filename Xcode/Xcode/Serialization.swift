@@ -10,42 +10,39 @@ import Foundation
 
 extension XCProjectFile {
 
-  public func writeToXcodeproj(xcodeprojURL url: NSURL, format: NSPropertyListFormat? = nil) throws -> Bool {
+  public func write(to url: URL, format: PropertyListSerialization.PropertyListFormat? = nil) throws {
 
-    try NSFileManager.defaultManager().createDirectoryAtURL(url, withIntermediateDirectories: true, attributes: nil)
+    try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
 
-    let name = try XCProjectFile.projectName(url)
-    guard let path = url.URLByAppendingPathComponent("project.pbxproj", isDirectory: false) else {
-      throw ProjectFileError.MissingPbxproj
-    }
+    let name = try XCProjectFile.projectName(from: url)
+    let path = url.appendingPathComponent("project.pbxproj", isDirectory: false)
 
     let serializer = Serializer(projectName: name, projectFile: self)
     let plformat = format ?? self.format
 
-    if plformat == NSPropertyListFormat.OpenStepFormat {
-      try serializer.openStepSerialization.writeToURL(path, atomically: true, encoding: NSUTF8StringEncoding)
-      return true
+    if plformat == PropertyListSerialization.PropertyListFormat.openStep {
+      try serializer.openStepSerialization.write(to: path, atomically: true, encoding: String.Encoding.utf8)
     }
     else {
-      let data = try NSPropertyListSerialization.dataWithPropertyList(dict, format: plformat, options: 0)
-      return data.writeToURL(path, atomically: true)
+      let data = try PropertyListSerialization.data(fromPropertyList: dict, format: plformat, options: 0)
+      try data.write(to: path)
     }
   }
 
-  public func serialize(projectName: String) throws -> NSData {
+  public func serialized(projectName: String) throws -> Data {
 
     let serializer = Serializer(projectName: projectName, projectFile: self)
 
-    if format == NSPropertyListFormat.OpenStepFormat {
-      return serializer.openStepSerialization.dataUsingEncoding(NSUTF8StringEncoding)!
+    if format == PropertyListSerialization.PropertyListFormat.openStep {
+      return serializer.openStepSerialization.data(using: String.Encoding.utf8)!
     }
     else {
-      return try NSPropertyListSerialization.dataWithPropertyList(dict, format: format, options: 0)
+      return try PropertyListSerialization.data(fromPropertyList: dict, format: format, options: 0)
     }
   }
 }
 
-let nonescapeRegex = try! NSRegularExpression(pattern: "^[a-z0-9_\\.\\/]+$", options: NSRegularExpressionOptions.CaseInsensitive)
+let nonescapeRegex = try! NSRegularExpression(pattern: "^[a-z0-9_\\$\\.\\/]+$", options: NSRegularExpression.Options.caseInsensitive)
 let specialRegexes = [
   "\\\\": try! NSRegularExpression(pattern: "\\\\", options: []),
   "\\\"": try! NSRegularExpression(pattern: "\"", options: []),
@@ -75,7 +72,7 @@ internal class Serializer {
 
   lazy var buildPhaseByFileId: [String: PBXBuildPhase] = {
 
-    let buildPhases = self.projectFile.allObjects.dict.values.ofType(PBXBuildPhase)
+    let buildPhases = self.projectFile.allObjects.dict.values.ofType(PBXBuildPhase.self)
 
     var dict: [String: PBXBuildPhase] = [:]
     for buildPhase in buildPhases {
@@ -93,7 +90,7 @@ internal class Serializer {
       "{",
     ]
 
-    for key in projectFile.dict.keys.sort() {
+    for key in projectFile.dict.keys.sorted() {
       let val: AnyObject = projectFile.dict[key]!
 
       if key == "objects" {
@@ -101,25 +98,25 @@ internal class Serializer {
         lines.append("\tobjects = {")
 
         let groupedObjects = projectFile.allObjects.dict.values
-          .groupBy { $0.isa }
-          .sortBy { $0.0 }
+          .grouped { $0.isa }
+          .sorted { $0.0 }
 
         for (isa, objects) in groupedObjects {
           lines.append("")
           lines.append("/* Begin \(isa) section */")
 
-          for object in objects.sortBy({ $0.id }) {
+          for object in objects.sorted(by: { $0.id }) {
 
             let multiline = isa != "PBXBuildFile" && isa != "PBXFileReference"
 
-            let parts = rows(isa, objKey: object.id, multiline: multiline, dict: object.dict)
+            let parts = rows(type: isa, objKey: object.id, multiline: multiline, dict: object.dict)
             if multiline {
               for ln in parts {
                 lines.append("\t\t" + ln)
               }
             }
             else {
-              lines.append("\t\t" + parts.joinWithSeparator(""))
+              lines.append("\t\t" + parts.joined(separator: ""))
             }
           }
 
@@ -134,7 +131,7 @@ internal class Serializer {
         }
 
         let row = "\(key) = \(val)\(comment);"
-        for line in row.componentsSeparatedByString("\n") {
+        for line in row.components(separatedBy: "\n") {
           lines.append("\t\(line)")
         }
       }
@@ -142,10 +139,10 @@ internal class Serializer {
 
     lines.append("}\n")
 
-    return lines.joinWithSeparator("\n")
+    return lines.joined(separator: "\n")
   }
 
-  func comment(key: String) -> String? {
+  func comment(forKey key: String) -> String? {
     if key == projectFile.project.id {
       return "Project object"
     }
@@ -180,10 +177,10 @@ internal class Serializer {
       }
       if let buildFile = obj as? PBXBuildFile {
         if let buildPhase = buildPhaseByFileId[key],
-          let group = comment(buildPhase.id) {
+          let group = comment(forKey: buildPhase.id) {
 
           if let fileRefId = buildFile.fileRef?.id {
-            if let fileRef = comment(fileRefId) {
+            if let fileRef = comment(forKey: fileRefId) {
               return "\(fileRef) in \(group)"
             }
           }
@@ -205,17 +202,17 @@ internal class Serializer {
     return nil
   }
 
-  func valStr(val: String) -> String {
+  func valStr(_ val: String) -> String {
 
     var str = val
     for (replacement, regex) in specialRegexes {
       let range = NSRange(location: 0, length: str.utf16.count)
-      let template = NSRegularExpression.escapedTemplateForString(replacement)
-      str = regex.stringByReplacingMatchesInString(str, options: [], range: range, withTemplate: template)
+      let template = NSRegularExpression.escapedTemplate(for: replacement)
+      str = regex.stringByReplacingMatches(in: str, options: [], range: range, withTemplate: template)
     }
 
     let range = NSRange(location: 0, length: str.utf16.count)
-    if let _ = nonescapeRegex.firstMatchInString(str, options: [], range: range) {
+    if let _ = nonescapeRegex.firstMatch(in: str, options: [], range: range) {
       return str
     }
 
@@ -234,7 +231,7 @@ internal class Serializer {
         let str = valStr(valItem)
 
         var extraComment = ""
-        if let c = comment(valItem) {
+        if let c = comment(forKey: valItem) {
           extraComment = " /* \(c) */"
         }
 
@@ -247,7 +244,7 @@ internal class Serializer {
         parts.append(");")
       }
       else {
-        parts.append(ps.map { $0 + " "}.joinWithSeparator("") + "); ")
+        parts.append(ps.map { $0 + " "}.joined(separator: "") + "); ")
       }
 
     }
@@ -259,9 +256,9 @@ internal class Serializer {
           parts.append("\t{")
         }
 
-        for valKey in valObj.keys.sort() {
+        for valKey in valObj.keys.sorted() {
           let valVal: AnyObject = valObj[valKey]!
-          let ps = objval(valKey, val: valVal, multiline: multiline)
+          let ps = objval(key: valKey, val: valVal, multiline: multiline)
 
           if multiline {
             for p in ps {
@@ -269,7 +266,7 @@ internal class Serializer {
             }
           }
           else {
-            parts.append("\t" + ps.joinWithSeparator("") + "}; ")
+            parts.append("\t" + ps.joined(separator: "") + "}; ")
           }
         }
 
@@ -284,9 +281,9 @@ internal class Serializer {
     else if let valObj = val as? JsonObject {
       parts.append("\(keyStr) = {")
 
-      for valKey in valObj.keys.sort() {
+      for valKey in valObj.keys.sorted() {
         let valVal: AnyObject = valObj[valKey]!
-        let ps = objval(valKey, val: valVal, multiline: multiline)
+        let ps = objval(key: valKey, val: valVal, multiline: multiline)
 
         if multiline {
           for p in ps {
@@ -294,7 +291,7 @@ internal class Serializer {
           }
         }
         else {
-          parts.append(ps.joinWithSeparator("") + "}; ")
+          parts.append(ps.joined(separator: "") + "}; ")
         }
       }
 
@@ -307,7 +304,7 @@ internal class Serializer {
       let str = valStr("\(val)")
 
       var extraComment = "";
-      if let c = comment(str) {
+      if let c = comment(forKey: str) {
         extraComment = " /* \(c) */"
       }
 
@@ -336,17 +333,17 @@ internal class Serializer {
       parts.append("isa = \(type); ")
     }
 
-    for key in dict.keys.sort() {
+    for key in dict.keys.sorted() {
       if key == "isa" { continue }
       let val: AnyObject = dict[key]!
 
-      for p in objval(key, val: val, multiline: multiline) {
+      for p in objval(key: key, val: val, multiline: multiline) {
         parts.append(p)
       }
     }
 
     var objComment = ""
-    if let c = comment(objKey) {
+    if let c = comment(forKey: objKey) {
       objComment = " /* \(c) */"
     }
 
@@ -363,7 +360,7 @@ internal class Serializer {
       return lines
     }
     else {
-      return [opening + parts.joinWithSeparator("") + closing]
+      return [opening + parts.joined(separator: "") + closing]
     }
   }
 }

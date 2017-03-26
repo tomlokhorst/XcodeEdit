@@ -8,18 +8,20 @@
 
 import Foundation
 
-enum ProjectFileError : ErrorType, CustomStringConvertible {
-  case InvalidData
-  case NotXcodeproj
-  case MissingPbxproj
+enum ProjectFileError : Error, CustomStringConvertible {
+  case invalidData
+  case notXcodeproj
+  case missingPbxproj
 
   var description: String {
     switch self {
-    case .InvalidData:
+    case .invalidData:
       return "Data in .pbxproj file not in expected format"
-    case .NotXcodeproj:
+
+    case .notXcodeproj:
       return "Path is not a .xcodeproj package"
-    case .MissingPbxproj:
+
+    case .missingPbxproj:
       return "project.pbxproj file missing"
     }
   }
@@ -29,47 +31,43 @@ public class AllObjects {
   var dict: [String: PBXObject] = [:]
   var fullFilePaths: [String: Path] = [:]
 
-  func object<T : PBXObject>(key: String) -> T {
+  func object<T : PBXObject>(_ key: String) -> T {
     let obj = dict[key]!
     if let t = obj as? T {
       return t
     }
 
-    return T(id: key, dict: obj.dict, allObjects: self)
+    return T(id: key, dict: obj.dict as AnyObject, allObjects: self)
   }
 }
 
 public class XCProjectFile {
   public let project: PBXProject
   let dict: JsonObject
-  var format: NSPropertyListFormat
+  var format: PropertyListSerialization.PropertyListFormat
   let allObjects = AllObjects()
 
-  public convenience init(xcodeprojURL: NSURL) throws {
-
-
-    guard let pbxprojURL = xcodeprojURL.URLByAppendingPathComponent("project.pbxproj", isDirectory: false),
-              data = NSData(contentsOfURL: pbxprojURL) else {
-      throw ProjectFileError.MissingPbxproj
-    }
+  public convenience init(xcodeprojURL: URL) throws {
+    let pbxprojURL = xcodeprojURL.appendingPathComponent("project.pbxproj", isDirectory: false)
+    let data = try Data(contentsOf: pbxprojURL)
 
     try self.init(propertyListData: data)
   }
 
-  public convenience init(propertyListData data: NSData) throws {
+  public convenience init(propertyListData data: Data) throws {
 
-    let options = NSPropertyListReadOptions.Immutable
-    var format: NSPropertyListFormat = NSPropertyListFormat.BinaryFormat_v1_0
-    let obj = try NSPropertyListSerialization.propertyListWithData(data, options: options, format: &format)
+    let options = PropertyListSerialization.MutabilityOptions()
+    var format: PropertyListSerialization.PropertyListFormat = PropertyListSerialization.PropertyListFormat.binary
+    let obj = try PropertyListSerialization.propertyList(from: data, options: options, format: &format)
 
     guard let dict = obj as? JsonObject else {
-      throw ProjectFileError.InvalidData
+      throw ProjectFileError.invalidData
     }
 
     self.init(dict: dict, format: format)
   }
 
-  init(dict: JsonObject, format: NSPropertyListFormat) {
+  init(dict: JsonObject, format: PropertyListSerialization.PropertyListFormat) {
     self.dict = dict
     self.format = format
     let objects = dict["objects"] as! [String: JsonObject]
@@ -80,54 +78,58 @@ public class XCProjectFile {
 
     let rootObjectId = dict["rootObject"]! as! String
     let projDict = objects[rootObjectId]!
-    self.project = PBXProject(id: rootObjectId, dict: projDict, allObjects: allObjects)
+    self.project = PBXProject(id: rootObjectId, dict: projDict as AnyObject, allObjects: allObjects)
     self.allObjects.fullFilePaths = paths(self.project.mainGroup, prefix: "")
   }
 
-  static func projectName(url: NSURL) throws -> String {
+  static func projectName(from url: URL) throws -> String {
 
-    guard let subpaths = url.pathComponents,
-          let last = subpaths.last,
-          let range = last.rangeOfString(".xcodeproj")
+    let subpaths = url.pathComponents
+    guard let last = subpaths.last,
+          let range = last.range(of: ".xcodeproj")
     else {
-      throw ProjectFileError.NotXcodeproj
+      throw ProjectFileError.notXcodeproj
     }
 
-    return last.substringToIndex(range.startIndex)
+    return last.substring(to: range.lowerBound)
   }
 
-  static func createObject(id: String, dict: JsonObject, allObjects: AllObjects) -> PBXObject {
+  static func createObject(_ id: String, dict: JsonObject, allObjects: AllObjects) -> PBXObject {
     let isa = dict["isa"] as? String
 
     if let isa = isa,
        let type = types[isa] {
-      return type.init(id: id, dict: dict, allObjects: allObjects)
+      return type.init(id: id, dict: dict as AnyObject, allObjects: allObjects)
     }
 
     // Fallback
     assertionFailure("Unknown PBXObject subclass isa=\(isa)")
-    return PBXObject(id: id, dict: dict, allObjects: allObjects)
+    return PBXObject(id: id, dict: dict as AnyObject, allObjects: allObjects)
   }
 
-  func paths(current: PBXGroup, prefix: String) -> [String: Path] {
+  func paths(_ current: PBXGroup, prefix: String) -> [String: Path] {
 
     var ps: [String: Path] = [:]
 
     for file in current.fileRefs {
       switch file.sourceTree {
-      case .Group:
+      case .group:
         switch current.sourceTree {
-        case .Absolute:
-          ps[file.id] = .Absolute(prefix + "/" + file.path!)
-        case .Group:
-          ps[file.id] = .RelativeTo(.SourceRoot, prefix + "/" + file.path!)
-        case .RelativeTo(let sourceTreeFolder):
-          ps[file.id] = .RelativeTo(sourceTreeFolder, prefix + "/" + file.path!)
+        case .absolute:
+          ps[file.id] = .absolute(prefix + "/" + file.path!)
+
+        case .group:
+          ps[file.id] = .relativeTo(.sourceRoot, prefix + "/" + file.path!)
+
+        case .relativeTo(let sourceTreeFolder):
+          ps[file.id] = .relativeTo(sourceTreeFolder, prefix + "/" + file.path!)
         }
-      case .Absolute:
-        ps[file.id] = .Absolute(file.path!)
-      case let .RelativeTo(sourceTreeFolder):
-        ps[file.id] = .RelativeTo(sourceTreeFolder, file.path!)
+
+      case .absolute:
+        ps[file.id] = .absolute(file.path!)
+
+      case let .relativeTo(sourceTreeFolder):
+        ps[file.id] = .relativeTo(sourceTreeFolder, file.path!)
       }
     }
 
@@ -137,17 +139,22 @@ public class XCProjectFile {
         let str: String
 
         switch group.sourceTree {
-        case .Absolute:
+        case .absolute:
           str = path
-        case .Group:
+
+        case .group:
           str = prefix + "/" + path
-        case .RelativeTo(.SourceRoot):
+
+        case .relativeTo(.sourceRoot):
           str = path
-        case .RelativeTo(.BuildProductsDir):
+
+        case .relativeTo(.buildProductsDir):
           str = path
-        case .RelativeTo(.DeveloperDir):
+
+        case .relativeTo(.developerDir):
           str = path
-        case .RelativeTo(.SDKRoot):
+
+        case .relativeTo(.sdkRoot):
           str = path
         }
 
