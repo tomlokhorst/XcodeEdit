@@ -1,6 +1,6 @@
 //
 //  XCProjectFile.swift
-//  Xcode
+//  XcKit
 //
 //  Created by Tom Lokhorst on 2015-08-12.
 //  Copyright (c) 2015 nonstrict. All rights reserved.
