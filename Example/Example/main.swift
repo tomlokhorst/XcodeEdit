@@ -15,13 +15,13 @@ if args.count < 2 {
 }
 
 // The xcodeproj file to load, test this with your own project!
-let xcodeproj = NSURL(fileURLWithPath: args[1])
+let xcodeproj = URL(fileURLWithPath: args[1])
 
 // Load from a xcodeproj
 let proj = try! XCProjectFile(xcodeprojURL: xcodeproj)
 
 // Write out a new pbxproj file
-try! proj.writeToXcodeproj(xcodeprojURL: xcodeproj, format: NSPropertyListFormat.OpenStepFormat)
+try! proj.write(to: xcodeproj, format: PropertyListSerialization.PropertyListFormat.openStep)
 
 // Print paths for all files in Resources build phases
 for target in proj.project.targets {
