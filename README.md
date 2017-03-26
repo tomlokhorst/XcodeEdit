@@ -1,4 +1,4 @@
-<img src="https://cloud.githubusercontent.com/assets/75655/10141830/f92646ca-660e-11e5-8e1e-40c90482ead0.png" width="175" alt="Xcode.swift">
+<img src="https://cloud.githubusercontent.com/assets/75655/24331694/0c12df18-123a-11e7-8045-6c3f94d83e0a.png" width="77" alt="XcKit">
 <hr>
 
 Reading _and writing_ the the Xcode pbxproj file format, from Swift!
@@ -14,17 +14,18 @@ Usage
 This reads a xcodeproj file (possibly in XML format), and writes it back out in OpenStep format:
 
 ```swift
-let xcodeproj = NSURL(fileURLWithPath: "Test.xcodeproj")
+let xcodeproj = URL(fileURLWithPath: "Test.xcodeproj")
 
 let proj = try! XCProjectFile(xcodeprojURL: xcodeproj)
 
-try! proj.writeToXcodeproj(xcodeprojURL: xcodeproj, format: NSPropertyListFormat.OpenStepFormat)
+try! proj.write(to: xcodeproj, format: PropertyListSerialization.PropertyListFormat.openStep)
 ```
 
 
 Releases
 --------
 
+ - **1.0.0** - 2017-03-26 - Rename from Xcode.swift to XcKit
  - **0.3.0** - 2016-04-27 - Fixes to SourceTreeFolder
  - 0.2.1 - 2015-12-30 - Add missing PBXProxyReference class
  - **0.2.0** - 2015-10-29 - Adds serialization support
@@ -34,5 +35,5 @@ Releases
 Licence & Credits
 -----------------
 
-Xcode.swift is written by [Tom Lokhorst](https://twitter.com/tomlokhorst) and available under the [MIT license](https://github.com/tomlokhorst/Xcode.swift/blob/develop/LICENSE), so feel free to use it in commercial and non-commercial projects.
+XcKit is written by [Tom Lokhorst](https://twitter.com/tomlokhorst) and available under the [MIT license](https://github.com/tomlokhorst/XcKit/blob/develop/LICENSE), so feel free to use it in commercial and non-commercial projects.
 
