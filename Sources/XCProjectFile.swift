@@ -103,7 +103,7 @@ public class XCProjectFile {
     }
 
     // Fallback
-    assertionFailure("Unknown PBXObject subclass isa=\(isa)")
+    assertionFailure("Unknown PBXObject subclass isa=\(String(describing: isa))")
     return PBXObject(id: id, dict: dict as AnyObject, allObjects: allObjects)
   }
 
