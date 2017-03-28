@@ -14,7 +14,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		E2198F341E87F5480060E645 /* XcKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = XcKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		E2198F341E87F5480060E645 /* XcodeEdit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = XcodeEdit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E2198F491E87F5D20060E645 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		E2198F4A1E87F5D20060E645 /* PBXObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PBXObject.swift; sourceTree = "<group>"; };
 		E2198F4B1E87F5D20060E645 /* Serialization.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Serialization.swift; sourceTree = "<group>"; };
@@ -43,7 +43,7 @@
 		E2198F351E87F5480060E645 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				E2198F341E87F5480060E645 /* XcKit.framework */,
+				E2198F341E87F5480060E645 /* XcodeEdit.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -73,9 +73,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		E2198F331E87F5480060E645 /* XcKit */ = {
+		E2198F331E87F5480060E645 /* XcodeEdit */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E2198F3C1E87F5480060E645 /* Build configuration list for PBXNativeTarget "XcKit" */;
+			buildConfigurationList = E2198F3C1E87F5480060E645 /* Build configuration list for PBXNativeTarget "XcodeEdit" */;
 			buildPhases = (
 				E2198F2F1E87F5480060E645 /* Sources */,
 				E2198F301E87F5480060E645 /* Frameworks */,
@@ -86,9 +86,9 @@
 			);
 			dependencies = (
 			);
-			name = XcKit;
-			productName = XcKit;
-			productReference = E2198F341E87F5480060E645 /* XcKit.framework */;
+			name = XcodeEdit;
+			productName = XcodeEdit;
+			productReference = E2198F341E87F5480060E645 /* XcodeEdit.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
@@ -98,7 +98,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0820;
-				ORGANIZATIONNAME = XcKit;
+				ORGANIZATIONNAME = XcodeEdit;
 				TargetAttributes = {
 					E2198F331E87F5480060E645 = {
 						CreatedOnToolsVersion = 8.2.1;
@@ -106,7 +106,7 @@
 					};
 				};
 			};
-			buildConfigurationList = E2198F2E1E87F5480060E645 /* Build configuration list for PBXProject "XcKit" */;
+			buildConfigurationList = E2198F2E1E87F5480060E645 /* Build configuration list for PBXProject "XcodeEdit" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -118,7 +118,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				E2198F331E87F5480060E645 /* XcKit */,
+				E2198F331E87F5480060E645 /* XcodeEdit */,
 			);
 		};
 /* End PBXProject section */
@@ -258,7 +258,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.nonstrict.XcKit;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nonstrict.XcodeEdit;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 3.0;
@@ -276,7 +276,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.nonstrict.XcKit;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nonstrict.XcodeEdit;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 3.0;
@@ -286,7 +286,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		E2198F2E1E87F5480060E645 /* Build configuration list for PBXProject "XcKit" */ = {
+		E2198F2E1E87F5480060E645 /* Build configuration list for PBXProject "XcodeEdit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E2198F3A1E87F5480060E645 /* Debug */,
@@ -295,7 +295,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		E2198F3C1E87F5480060E645 /* Build configuration list for PBXNativeTarget "XcKit" */ = {
+		E2198F3C1E87F5480060E645 /* Build configuration list for PBXNativeTarget "XcodeEdit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E2198F3D1E87F5480060E645 /* Debug */,

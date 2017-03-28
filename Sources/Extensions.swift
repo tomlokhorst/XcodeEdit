@@ -1,6 +1,6 @@
 //
 //  Extensions.swift
-//  XcKit
+//  XcodeEdit
 //
 //  Created by Tom Lokhorst on 2015-08-29.
 //  Copyright © 2015 nonstrict. All rights reserved.

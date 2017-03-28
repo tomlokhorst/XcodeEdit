@@ -1,5 +1,5 @@
 Pod::Spec.new do |s|
-  s.name         = "XcKit"
+  s.name         = "XcodeEdit"
   s.version      = "1.0.0"
   s.license      = "MIT"
 
@@ -11,12 +11,12 @@ The main goal of this project is to generate project.pbxproj files in the legacy
 
   s.authors           = { "Tom Lokhorst" => "tom@lokhorst.eu" }
   s.social_media_url  = "https://twitter.com/tomlokhorst"
-  s.homepage          = "https://github.com/tomlokhorst/XcKit"
+  s.homepage          = "https://github.com/tomlokhorst/XcodeEdit"
 
   s.ios.deployment_target = '9.0'
   s.osx.deployment_target = '10.10'
 
-  s.source          = { :git => "https://github.com/tomlokhorst/XcKit.git", :tag => s.version }
+  s.source          = { :git => "https://github.com/tomlokhorst/XcodeEdit.git", :tag => s.version }
   s.source_files    = "Sources"
 
 end

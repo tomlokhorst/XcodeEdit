@@ -1,4 +1,4 @@
-<img src="https://cloud.githubusercontent.com/assets/75655/24331694/0c12df18-123a-11e7-8045-6c3f94d83e0a.png" width="77" alt="XcKit">
+<img src="https://cloud.githubusercontent.com/assets/75655/24417155/91254d68-13e7-11e7-91eb-470380161633.png" width="154" alt="XcodeEdit">
 <hr>
 
 Reading _and writing_ the Xcode pbxproj file format, from Swift!
@@ -25,7 +25,7 @@ try! proj.write(to: xcodeproj, format: PropertyListSerialization.PropertyListFor
 Releases
 --------
 
- - **1.0.0** - 2017-03-26 - Rename from Xcode.swift to XcKit
+ - **1.0.0** - 2017-03-28 - Rename from Xcode.swift to XcodeEdit
  - **0.3.0** - 2016-04-27 - Fixes to SourceTreeFolder
  - 0.2.1 - 2015-12-30 - Add missing PBXProxyReference class
  - **0.2.0** - 2015-10-29 - Adds serialization support
@@ -35,5 +35,5 @@ Releases
 Licence & Credits
 -----------------
 
-XcKit is written by [Tom Lokhorst](https://twitter.com/tomlokhorst) and available under the [MIT license](https://github.com/tomlokhorst/XcKit/blob/develop/LICENSE), so feel free to use it in commercial and non-commercial projects.
+XcodeEdit is written by [Tom Lokhorst](https://twitter.com/tomlokhorst) and available under the [MIT license](https://github.com/tomlokhorst/XcodeEdit/blob/develop/LICENSE), so feel free to use it in commercial and non-commercial projects.
 
