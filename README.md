@@ -1,7 +1,7 @@
 <img src="https://cloud.githubusercontent.com/assets/75655/24331694/0c12df18-123a-11e7-8045-6c3f94d83e0a.png" width="77" alt="XcKit">
 <hr>
 
-Reading _and writing_ the the Xcode pbxproj file format, from Swift!
+Reading _and writing_ the Xcode pbxproj file format, from Swift!
 
 The main goal of this project is to generate `project.pbxproj` files in the legacy OpenStep format used by Xcode. Using this, a project file can be modified without changing it to XML format and causing a huge git diff.
 
