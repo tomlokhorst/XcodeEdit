@@ -8,12 +8,12 @@
 
 import Foundation
 
-enum ProjectFileError : Error, CustomStringConvertible {
+public enum ProjectFileError : Error, CustomStringConvertible {
   case invalidData
   case notXcodeproj
   case missingPbxproj
 
-  var description: String {
+  public var description: String {
     switch self {
     case .invalidData:
       return "Data in .pbxproj file not in expected format"

@@ -42,8 +42,8 @@ extension XCProjectFile {
   }
 }
 
-let nonescapeRegex = try! NSRegularExpression(pattern: "^[a-z0-9_\\$\\.\\/]+$", options: NSRegularExpression.Options.caseInsensitive)
-let specialRegexes = [
+private let nonescapeRegex = try! NSRegularExpression(pattern: "^[a-z0-9_\\$\\.\\/]+$", options: NSRegularExpression.Options.caseInsensitive)
+private let specialRegexes = [
   "\\\\": try! NSRegularExpression(pattern: "\\\\", options: []),
   "\\\"": try! NSRegularExpression(pattern: "\"", options: []),
   "\\n": try! NSRegularExpression(pattern: "\\n", options: []),

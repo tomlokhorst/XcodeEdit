@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum AllObjectsError: Error {
+public enum AllObjectsError: Error {
   case fieldMissing(key: String)
   case invalidValue(key: String, value: String)
   case objectMissing(key: String)
