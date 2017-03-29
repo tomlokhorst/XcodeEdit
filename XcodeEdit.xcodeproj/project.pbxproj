@@ -11,6 +11,7 @@
 		E2198F4E1E87F5D20060E645 /* PBXObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2198F4A1E87F5D20060E645 /* PBXObject.swift */; };
 		E2198F4F1E87F5D20060E645 /* Serialization.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2198F4B1E87F5D20060E645 /* Serialization.swift */; };
 		E2198F501E87F5D20060E645 /* XCProjectFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2198F4C1E87F5D20060E645 /* XCProjectFile.swift */; };
+		E22A620B1E8B7EEB009B7F9F /* AllObjects.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22A620A1E8B7EEB009B7F9F /* AllObjects.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,6 +20,7 @@
 		E2198F4A1E87F5D20060E645 /* PBXObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PBXObject.swift; sourceTree = "<group>"; };
 		E2198F4B1E87F5D20060E645 /* Serialization.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Serialization.swift; sourceTree = "<group>"; };
 		E2198F4C1E87F5D20060E645 /* XCProjectFile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XCProjectFile.swift; sourceTree = "<group>"; };
+		E22A620A1E8B7EEB009B7F9F /* AllObjects.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AllObjects.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,12 +53,12 @@
 		E2198F481E87F5D20060E645 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				E22A620A1E8B7EEB009B7F9F /* AllObjects.swift */,
 				E2198F491E87F5D20060E645 /* Extensions.swift */,
 				E2198F4A1E87F5D20060E645 /* PBXObject.swift */,
 				E2198F4B1E87F5D20060E645 /* Serialization.swift */,
 				E2198F4C1E87F5D20060E645 /* XCProjectFile.swift */,
 			);
-			name = Sources;
 			path = Sources;
 			sourceTree = "<group>";
 		};
@@ -139,6 +141,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E2198F501E87F5D20060E645 /* XCProjectFile.swift in Sources */,
+				E22A620B1E8B7EEB009B7F9F /* AllObjects.swift in Sources */,
 				E2198F4D1E87F5D20060E645 /* Extensions.swift in Sources */,
 				E2198F4F1E87F5D20060E645 /* Serialization.swift in Sources */,
 				E2198F4E1E87F5D20060E645 /* PBXObject.swift in Sources */,

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		E22195B21B7C6EDA00F58D3F /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22195B11B7C6EDA00F58D3F /* main.swift */; };
+		E242AE821E88E3FA00F4CCA5 /* AllObjects.swift in Sources */ = {isa = PBXBuildFile; fileRef = E242AE811E88E3FA00F4CCA5 /* AllObjects.swift */; };
 		E262D4451B7E21190057CCEE /* XCProjectFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E262D4441B7E21190057CCEE /* XCProjectFile.swift */; };
 		E292B9C71B9236D900D75DE2 /* Serialization.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9C61B9236D900D75DE2 /* Serialization.swift */; };
 		E292B9CE1B932F3200D75DE2 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9CC1B932F3200D75DE2 /* Extensions.swift */; };
@@ -29,6 +30,7 @@
 /* Begin PBXFileReference section */
 		E22195AE1B7C6EDA00F58D3F /* Example */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Example; sourceTree = BUILT_PRODUCTS_DIR; };
 		E22195B11B7C6EDA00F58D3F /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		E242AE811E88E3FA00F4CCA5 /* AllObjects.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AllObjects.swift; path = ../Sources/AllObjects.swift; sourceTree = "<group>"; };
 		E262D4441B7E21190057CCEE /* XCProjectFile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = XCProjectFile.swift; path = ../Sources/XCProjectFile.swift; sourceTree = "<group>"; };
 		E292B9C61B9236D900D75DE2 /* Serialization.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Serialization.swift; path = ../Sources/Serialization.swift; sourceTree = "<group>"; };
 		E292B9CC1B932F3200D75DE2 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Extensions.swift; path = ../Sources/Extensions.swift; sourceTree = "<group>"; };
@@ -50,7 +52,7 @@
 			isa = PBXGroup;
 			children = (
 				E22195B01B7C6EDA00F58D3F /* Example */,
-				E262D4411B7E20AA0057CCEE /* Xcode.swift */,
+				E262D4411B7E20AA0057CCEE /* XcodeEdit */,
 				E22195AF1B7C6EDA00F58D3F /* Products */,
 			);
 			indentWidth = 2;
@@ -74,15 +76,16 @@
 			path = Example;
 			sourceTree = "<group>";
 		};
-		E262D4411B7E20AA0057CCEE /* Xcode.swift */ = {
+		E262D4411B7E20AA0057CCEE /* XcodeEdit */ = {
 			isa = PBXGroup;
 			children = (
+				E242AE811E88E3FA00F4CCA5 /* AllObjects.swift */,
 				E292B9CC1B932F3200D75DE2 /* Extensions.swift */,
 				E292B9CD1B932F3200D75DE2 /* PBXObject.swift */,
 				E292B9C61B9236D900D75DE2 /* Serialization.swift */,
 				E262D4441B7E21190057CCEE /* XCProjectFile.swift */,
 			);
-			name = Xcode.swift;
+			name = XcodeEdit;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -147,6 +150,7 @@
 				E262D4451B7E21190057CCEE /* XCProjectFile.swift in Sources */,
 				E292B9C71B9236D900D75DE2 /* Serialization.swift in Sources */,
 				E22195B21B7C6EDA00F58D3F /* main.swift in Sources */,
+				E242AE821E88E3FA00F4CCA5 /* AllObjects.swift in Sources */,
 				E292B9CE1B932F3200D75DE2 /* Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
