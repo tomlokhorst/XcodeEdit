@@ -40,7 +40,10 @@
 				E2198F481E87F5D20060E645 /* Sources */,
 				E2198F351E87F5480060E645 /* Products */,
 			);
+			indentWidth = 2;
 			sourceTree = "<group>";
+			tabWidth = 2;
+			usesTabs = 0;
 		};
 		E2198F351E87F5480060E645 /* Products */ = {
 			isa = PBXGroup;
