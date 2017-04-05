@@ -59,7 +59,7 @@ public class XCProjectFile {
     let objects = dict["objects"] as! [String: Fields]
 
     for (key, obj) in objects {
-      allObjects.dict[key] = try AllObjects.createObject(key, fields: obj, allObjects: allObjects)
+      allObjects.objects[key] = try AllObjects.createObject(key, fields: obj, allObjects: allObjects)
     }
 
     let rootObjectId = dict["rootObject"]! as! String

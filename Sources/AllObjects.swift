@@ -25,26 +25,42 @@ public struct Reference<Value : PBXObject> {
 }
 
 public class AllObjects {
-  var dict: [String: PBXObject] = [:]
+  var objects: [String: PBXObject] = [:]
   var fullFilePaths: [String: Path] = [:]
+  var refCounts: [GuidKey: Int] = [:]
 
-  func createReference<Value: PBXObject>(id: String) -> Reference<Value> {
+  func createReference<Value: PBXObject>(id: GuidKey) -> Reference<Value> {
+    let count = refCounts[id] ?? 0
+    refCounts[id] = count + 1
+
     let ref: Reference<Value> = Reference(allObjects: self, id: id)
     return ref
   }
 
   func createReference<Value: PBXObject>(value: Value) -> Reference<Value> {
-    dict[value.id] = value
+    let count = refCounts[value.id] ?? 0
+    refCounts[value.id] = count + 1
+
+    objects[value.id] = value
     let ref: Reference<Value> = Reference(allObjects: self, id: value.id)
     return ref
   }
 
   func removeReference<Value: PBXObject>(_ ref: Reference<Value>) {
-    dict[ref.id] = nil
+    guard let count = refCounts[ref.id], count > 0 else {
+      assertionFailure("refCount[\(ref.id)] is \(refCounts[ref.id]?.description ?? "nil")")
+      return
+    }
+
+    refCounts[ref.id] = count - 1
+
+    if count == 1 {
+      objects[ref.id] = nil
+    }
   }
 
   func object<T : PBXObject>(_ key: String) -> T {
-    let obj = dict[key]!
+    let obj = objects[key]!
     if let t = obj as? T {
       return t
     }
@@ -59,7 +75,7 @@ public class AllObjects {
   }
 
   func object2<T : PBXObject>(_ key: String) throws -> T {
-    guard let obj = dict[key] else {
+    guard let obj = objects[key] else {
       throw AllObjectsError.objectMissing(key: key)
     }
     guard let object = obj as? T else {

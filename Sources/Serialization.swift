@@ -72,7 +72,7 @@ internal class Serializer {
 
   lazy var buildPhaseByFileId: [String: PBXBuildPhase] = {
 
-    let buildPhases = self.projectFile.allObjects.dict.values.ofType(PBXBuildPhase.self)
+    let buildPhases = self.projectFile.allObjects.objects.values.ofType(PBXBuildPhase.self)
 
     var dict: [String: PBXBuildPhase] = [:]
     for buildPhase in buildPhases {
@@ -97,7 +97,7 @@ internal class Serializer {
 
         lines.append("\tobjects = {")
 
-        let groupedObjects = projectFile.allObjects.dict.values
+        let groupedObjects = projectFile.allObjects.objects.values
           .grouped { $0.isa }
           .sorted { $0.0 }
 
@@ -147,7 +147,7 @@ internal class Serializer {
       return "Project object"
     }
 
-    if let obj = projectFile.allObjects.dict[key] {
+    if let obj = projectFile.allObjects.objects[key] {
       if let ref = obj as? PBXReference {
         return ref.name ?? ref.path
       }
