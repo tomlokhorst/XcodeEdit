@@ -20,7 +20,40 @@ let start = Date()
 let xcodeproj = URL(fileURLWithPath: args[1])
 
 // Load from a xcodeproj
+do {
+  let p = try XCProjectFile(xcodeprojURL: xcodeproj)
+  print("\(p.project.developmentRegion)")
+  print("\(p.project.hasScannedForEncodings)")
+  print("\(p.project.knownRegions)")
+  print("\(p.project.buildConfigurationList)")
+}
+catch {
+  print(String(describing: error))
+  fatalError()
+}
 let proj = try! XCProjectFile(xcodeprojURL: xcodeproj)
+
+var one = true
+for target in proj.project.targets {
+  for resourcesBuildPhase in target.buildPhases.ofType(PBXResourcesBuildPhase.self) {
+    for file in resourcesBuildPhase.files {
+      if file.fileRef?.id == "42A01CB619F4EC63001F2A12" && one {
+        one = false
+
+        // BuildFile: 07279C0F1A5AC565005F8996
+        let fields : Fields = [
+          "isa": "PBXFileReference" as NSString,
+          "sourceTree": "<absolute>" as NSString,
+          "path": "Tom.jpg" as NSString
+        ]
+        let fileRef = try! PBXFileReference(id: "TOM", fields: fields, allObjects: AllObjects())
+
+        file.fileRef = file.allObjects.createReference(value: fileRef)
+        print("> \(file)")
+      }
+    }
+  }
+}
 
 // Write out a new pbxproj file
 try! proj.write(to: xcodeproj, format: PropertyListSerialization.PropertyListFormat.openStep)

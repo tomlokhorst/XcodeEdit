@@ -10,14 +10,38 @@ import Foundation
 
 public enum AllObjectsError: Error {
   case fieldMissing(key: String)
+  case wrongType(key: String)
   case invalidValue(key: String, value: String)
   case objectMissing(key: String)
 }
 
+public struct Reference<Value : PBXObject> {
+  let allObjects: AllObjects
+
+  public let id: String
+  public var value: Value? {
+    return try? allObjects.object2(id)
+  }
+}
 
 public class AllObjects {
   var dict: [String: PBXObject] = [:]
   var fullFilePaths: [String: Path] = [:]
+
+  func createReference<Value: PBXObject>(id: String) -> Reference<Value> {
+    let ref: Reference<Value> = Reference(allObjects: self, id: id)
+    return ref
+  }
+
+  func createReference<Value: PBXObject>(value: Value) -> Reference<Value> {
+    dict[value.id] = value
+    let ref: Reference<Value> = Reference(allObjects: self, id: value.id)
+    return ref
+  }
+
+  func removeReference<Value: PBXObject>(_ ref: Reference<Value>) {
+    dict[ref.id] = nil
+  }
 
   func object<T : PBXObject>(_ key: String) -> T {
     let obj = dict[key]!
@@ -25,7 +49,28 @@ public class AllObjects {
       return t
     }
 
-    return T(id: key, fields: obj.fields, allObjects: self)
+    return try! T(id: key, fields: obj.fields, allObjects: self)
+  }
+
+  func object2<T : PBXObject>(_ key: String?) throws -> T? {
+    guard let key = key else { return nil }
+
+    return try object2(key)
+  }
+
+  func object2<T : PBXObject>(_ key: String) throws -> T {
+    guard let obj = dict[key] else {
+      throw AllObjectsError.objectMissing(key: key)
+    }
+    guard let object = obj as? T else {
+      throw AllObjectsError.wrongType(key: key)
+    }
+
+    return object
+  }
+
+  func objects2<T : PBXObject>(_ keys: [String]) throws -> [T] {
+    return try keys.map(object2)
   }
 
   static func createObject(_ id: String, fields: Fields, allObjects: AllObjects) throws -> PBXObject {
@@ -34,12 +79,12 @@ public class AllObjects {
     }
 
     if let type = types[isa] {
-      return type.init(id: id, fields: fields, allObjects: allObjects)
+      return try type.init(id: id, fields: fields, allObjects: allObjects)
     }
 
     // Fallback
     assertionFailure("Unknown PBXObject subclass isa=\(isa)")
-    return PBXObject(id: id, fields: fields, allObjects: allObjects)
+    return try! PBXObject(id: id, fields: fields, allObjects: allObjects)
   }
 }
 
@@ -70,34 +115,119 @@ private let types: [String: PBXObject.Type] = [
 
 typealias GuidKey = String
 
-extension Dictionary {
-  internal func key(_ keyString: String) throws -> GuidKey {
-    guard let key = keyString as? Key, let val = self[key] as? GuidKey else {
-      throw AllObjectsError.fieldMissing(key: keyString)
+extension Dictionary where Key == String {
+
+  internal func value<T>(_ key: String) throws -> T {
+    guard let val = self[key] else {
+      throw AllObjectsError.fieldMissing(key: key)
+    }
+    guard let value = val as? T else {
+      throw AllObjectsError.wrongType(key: key)
+    }
+
+    return value
+  }
+
+  internal func key(_ key: String) throws -> GuidKey {
+    guard let val = self[key] else {
+      throw AllObjectsError.fieldMissing(key: key)
+    }
+    guard let value = val as? GuidKey else {
+      throw AllObjectsError.wrongType(key: key)
+    }
+
+    return value
+  }
+
+  internal func keys(_ key: String) throws -> [GuidKey] {
+    guard let val = self[key] as? [GuidKey] else {
+      throw AllObjectsError.fieldMissing(key: key)
     }
 
     return val
   }
 
-  internal func keys(_ keyString: String) throws -> [GuidKey] {
-    guard let key = keyString as? Key, let val = self[key] as? [GuidKey] else {
-      throw AllObjectsError.fieldMissing(key: keyString)
+  internal func field<T>(_ key: String) throws -> T {
+    guard let val = self[key] as? T else {
+      throw AllObjectsError.fieldMissing(key: key)
     }
 
     return val
   }
 
-  internal func field<T>(_ keyString: String) throws -> T {
-    guard let key = keyString as? Key, let val = self[key] as? T else {
-      throw AllObjectsError.fieldMissing(key: keyString)
-    }
-
-    return val
-  }
-
-  internal func optionalField<T>(_ keyString: String) -> T? {
-    guard let key = keyString as? Key else { return nil }
-
+  internal func optionalField<T>(_ key: String) -> T? {
     return self[key] as? T
+  }
+
+  func bool(_ key: String) throws -> Bool {
+    guard let val = self[key] else {
+      throw AllObjectsError.fieldMissing(key: key)
+    }
+    guard let value = val as? String else {
+      throw AllObjectsError.wrongType(key: key)
+    }
+
+    switch value {
+    case "0":
+      return false
+
+    case "1":
+      return true
+
+    default:
+      throw AllObjectsError.wrongType(key: key)
+    }
+  }
+
+  func string2(_ key: String) throws -> String {
+    guard let val = self[key] else {
+      throw AllObjectsError.fieldMissing(key: key)
+    }
+    guard let value = val as? String else {
+      throw AllObjectsError.wrongType(key: key)
+    }
+
+    return value
+  }
+
+  func optionalString(_ key: String) throws -> String? {
+    guard let val = self[key] else {
+      return nil
+    }
+    guard let value = val as? String else {
+      throw AllObjectsError.wrongType(key: key)
+    }
+
+    return value
+  }
+
+  func optionalKey(_ key: String) throws -> GuidKey? {
+    guard let val = self[key] else {
+      return nil
+    }
+    guard let value = val as? GuidKey else {
+      throw AllObjectsError.wrongType(key: key)
+    }
+
+    return value
+  }
+
+  func strings2(_ key: String) throws -> [String] {
+    guard let val = self[key] else {
+      throw AllObjectsError.fieldMissing(key: key)
+    }
+    guard let value = val as? [String] else {
+      throw AllObjectsError.wrongType(key: key)
+    }
+
+    return value
+  }
+
+  func string(_ key: String) -> String? {
+    return self[key] as? String
+  }
+
+  func strings(_ key: String) -> [String]? {
+    return self[key] as? [String]
   }
 }

@@ -50,21 +50,21 @@ public class XCProjectFile {
       throw ProjectFileError.invalidData
     }
 
-    self.init(dict: dict, format: format)
+    try self.init(dict: dict, format: format)
   }
 
-  init(dict: Fields, format: PropertyListSerialization.PropertyListFormat) {
+  init(dict: Fields, format: PropertyListSerialization.PropertyListFormat) throws {
     self.dict = dict
     self.format = format
     let objects = dict["objects"] as! [String: Fields]
 
     for (key, obj) in objects {
-      allObjects.dict[key] = try! AllObjects.createObject(key, fields: obj, allObjects: allObjects)
+      allObjects.dict[key] = try AllObjects.createObject(key, fields: obj, allObjects: allObjects)
     }
 
     let rootObjectId = dict["rootObject"]! as! String
     let projDict = objects[rootObjectId]!
-    self.project = PBXProject(id: rootObjectId, fields: projDict, allObjects: allObjects)
+    self.project = try PBXProject(id: rootObjectId, fields: projDict, allObjects: allObjects)
     self.allObjects.fullFilePaths = paths(self.project.mainGroup, prefix: "")
   }
 
