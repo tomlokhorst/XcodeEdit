@@ -22,26 +22,7 @@ public /* abstract */ class PBXObject {
     self.fields = fields
     self.allObjects = allObjects
 
-    self.isa = try self.fields.field("isa")
-  }
-
-  func object<T : PBXObject>(_ key: String) -> T? {
-    guard let objectKey = fields[key] as? String else {
-      return nil
-    }
-
-    let obj: T = allObjects.object(objectKey)
-    return obj
-  }
-
-  func object<T : PBXObject>(_ key: String) -> T {
-    let objectKey = fields[key] as! String
-    return allObjects.object(objectKey)
-  }
-
-  func objects<T : PBXObject>(_ key: String) -> [T] {
-    let objectKeys = fields[key] as! [String]
-    return objectKeys.map(allObjects.object)
+    self.isa = try self.fields.string("isa")
   }
 }
 
@@ -52,18 +33,18 @@ public class PBXProject : PBXContainer {
   public let developmentRegion: String
   public let hasScannedForEncodings: Bool
   public let knownRegions: [String]
-  public let targets: [PBXNativeTarget]
-  public let mainGroup: PBXGroup
-  public let buildConfigurationList: XCConfigurationList
+  public let targets: [Reference<PBXNativeTarget>]
+  public let mainGroup: Reference<PBXGroup>
+  public let buildConfigurationList: Reference<XCConfigurationList>
 
   public required init(id: String, fields: Fields, allObjects: AllObjects) throws {
-    self.developmentRegion = try fields.string2("developmentRegion")
+    self.developmentRegion = try fields.string("developmentRegion")
     self.hasScannedForEncodings = try fields.bool("hasScannedForEncodings")
-    self.knownRegions = try fields.strings2("knownRegions")
+    self.knownRegions = try fields.strings("knownRegions")
 
-    self.targets = try allObjects.objects2(try fields.strings2("targets"))
-    self.mainGroup = try allObjects.object2(try fields.string2("mainGroup"))
-    self.buildConfigurationList = try allObjects.object2(try fields.string2("buildConfigurationList"))
+    self.targets = allObjects.createReferences(ids: try fields.strings("targets"))
+    self.mainGroup = allObjects.createReference(id: try fields.string("mainGroup"))
+    self.buildConfigurationList = allObjects.createReference(id: try fields.string("buildConfigurationList"))
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
   }
@@ -79,28 +60,10 @@ public /* abstract */ class PBXProjectItem : PBXContainerItem {
 }
 
 public class PBXBuildFile : PBXProjectItem {
-  public var fileRef: Reference<PBXReference>? {
-    didSet {
-      if let oldValue = oldValue {
-        allObjects.removeReference(oldValue)
-      }
-
-      if let fileRef = fileRef {
-        self.fields["fileRef"] = fileRef.id as NSObject
-      }
-      else {
-        self.fields["fileRef"] = nil
-      }
-    }
-  }
+  public let fileRef: Reference<PBXReference>?
 
   public required init(id: String, fields: Fields, allObjects: AllObjects) throws {
-    if let fileRefId = try fields.optionalKey("fileRef") {
-      self.fileRef = allObjects.createReference(id: fileRefId)
-    }
-    else {
-      self.fileRef = nil
-    }
+    self.fileRef = allObjects.createOptionalReference(id: try fields.optionalString("fileRef"))
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
   }
@@ -108,11 +71,23 @@ public class PBXBuildFile : PBXProjectItem {
 
 
 public /* abstract */ class PBXBuildPhase : PBXProjectItem {
-  public lazy var files: [PBXBuildFile] = self.objects("files")
+  public let files: [Reference<PBXBuildFile>]
+
+  public required init(id: String, fields: Fields, allObjects: AllObjects) throws {
+    self.files = allObjects.createReferences(ids: try fields.strings("files"))
+
+    try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
 }
 
 public class PBXCopyFilesBuildPhase : PBXBuildPhase {
-  public lazy var name: String? = self.fields.string("name")
+  public let name: String?
+
+  public required init(id: String, fields: Fields, allObjects: AllObjects) throws {
+    self.name = try fields.optionalString("name")
+
+    try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
 }
 
 public class PBXFrameworksBuildPhase : PBXBuildPhase {
@@ -125,8 +100,15 @@ public class PBXResourcesBuildPhase : PBXBuildPhase {
 }
 
 public class PBXShellScriptBuildPhase : PBXBuildPhase {
-  public lazy var name: String? = self.fields.string("name")
-  public lazy var shellScript: String = self.fields.string("shellScript")!
+  public let name: String?
+  public let shellScript: String
+
+  public required init(id: String, fields: Fields, allObjects: AllObjects) throws {
+    self.name = try fields.optionalString("name")
+    self.shellScript = try fields.string("shellScript")
+
+    try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
 }
 
 public class PBXSourcesBuildPhase : PBXBuildPhase {
@@ -136,14 +118,29 @@ public class PBXBuildStyle : PBXProjectItem {
 }
 
 public class XCBuildConfiguration : PBXBuildStyle {
-  public lazy var name: String = self.fields.string("name")!
+  public let name: String
+
+  public required init(id: String, fields: Fields, allObjects: AllObjects) throws {
+    self.name = try fields.string("name")
+
+    try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
 }
 
 public /* abstract */ class PBXTarget : PBXProjectItem {
-  public lazy var buildConfigurationList: XCConfigurationList = self.object("buildConfigurationList")
-  public lazy var name: String = self.fields.string("name")!
-  public lazy var productName: String = self.fields.string("productName")!
-  public lazy var buildPhases: [PBXBuildPhase] = self.objects("buildPhases")
+  public let buildConfigurationList: Reference<XCConfigurationList>
+  public let name: String
+  public let productName: String
+  public let buildPhases: [Reference<PBXBuildPhase>]
+
+  public required init(id: String, fields: Fields, allObjects: AllObjects) throws {
+    self.buildConfigurationList = allObjects.createReference(id: try fields.string("buildConfigurationList"))
+    self.name = try fields.string("name")
+    self.productName = try fields.string("productName")
+    self.buildPhases = allObjects.createReferences(ids: try fields.strings("buildPhases"))
+
+    try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
 }
 
 public class PBXAggregateTarget : PBXTarget {
@@ -167,7 +164,7 @@ public class PBXReference : PBXContainerItem {
     self.name = try fields.optionalString("name")
     self.path = try fields.optionalString("path")
 
-    let sourceTreeString = try fields.string2("sourceTree")
+    let sourceTreeString = try fields.string("sourceTree")
     guard let sourceTree = SourceTree(sourceTreeString: sourceTreeString) else {
       throw AllObjectsError.wrongType(key: sourceTreeString)
     }
@@ -180,21 +177,48 @@ public class PBXReference : PBXContainerItem {
 public class PBXFileReference : PBXReference {
 
   // convenience accessor
-  public lazy var fullPath: Path = self.allObjects.fullFilePaths[self.id]!
+  public var fullPath: Path? {
+    return self.allObjects.fullFilePaths[self.id]
+  }
+
 }
 
 public class PBXReferenceProxy : PBXReference {
 
-  // convenience accessor
-  public lazy var remoteRef: PBXContainerItemProxy = self.object("remoteRef")
+  public let remoteRef: Reference<PBXContainerItemProxy>
+
+  public required init(id: String, fields: Fields, allObjects: AllObjects) throws {
+    self.remoteRef = allObjects.createReference(id: try fields.string("remoteRef"))
+
+    try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
 }
 
 public class PBXGroup : PBXReference {
-  public lazy var children: [PBXReference] = self.objects("children")
+  public let children: [Reference<PBXReference>]
 
   // convenience accessors
-  public lazy var subGroups: [PBXGroup] = self.children.ofType(PBXGroup.self)
-  public lazy var fileRefs: [PBXFileReference] = self.children.ofType(PBXFileReference.self)
+  public var subGroups: [Reference<PBXGroup>] {
+    return self.children.flatMap { childRef in
+      guard let _ = childRef.value as? PBXGroup else { return nil }
+
+      return Reference(allObjects: childRef.allObjects, id: childRef.id)
+    }
+  }
+  public var fileRefs: [Reference<PBXFileReference>] {
+    return self.children.flatMap { childRef in
+      guard let _ = childRef.value as? PBXFileReference else { return nil }
+
+      return Reference(allObjects: childRef.allObjects, id: childRef.id)
+    }
+  }
+
+
+  public required init(id: String, fields: Fields, allObjects: AllObjects) throws {
+    self.children = allObjects.createReferences(ids: try fields.strings("children"))
+
+    try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
 }
 
 public class PBXVariantGroup : PBXGroup {

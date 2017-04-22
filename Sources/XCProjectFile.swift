@@ -29,7 +29,7 @@ public enum ProjectFileError : Error, CustomStringConvertible {
 
 public class XCProjectFile {
   public let project: PBXProject
-  let dict: Fields
+  let fields: Fields
   var format: PropertyListSerialization.PropertyListFormat
   let allObjects = AllObjects()
 
@@ -46,26 +46,36 @@ public class XCProjectFile {
     var format: PropertyListSerialization.PropertyListFormat = PropertyListSerialization.PropertyListFormat.binary
     let obj = try PropertyListSerialization.propertyList(from: data, options: options, format: &format)
 
-    guard let dict = obj as? Fields else {
+    guard let fields = obj as? Fields else {
       throw ProjectFileError.invalidData
     }
 
-    try self.init(dict: dict, format: format)
+    try self.init(fields: fields, format: format)
   }
 
-  init(dict: Fields, format: PropertyListSerialization.PropertyListFormat) throws {
-    self.dict = dict
-    self.format = format
-    let objects = dict["objects"] as! [String: Fields]
+  init(fields: Fields, format: PropertyListSerialization.PropertyListFormat) throws {
+    guard let objects = fields["objects"] as? [String: Fields] else {
+      throw AllObjectsError.wrongType(key: "objects")
+    }
 
     for (key, obj) in objects {
       allObjects.objects[key] = try AllObjects.createObject(key, fields: obj, allObjects: allObjects)
     }
 
-    let rootObjectId = dict["rootObject"]! as! String
-    let projDict = objects[rootObjectId]!
-    self.project = try PBXProject(id: rootObjectId, fields: projDict, allObjects: allObjects)
-    self.allObjects.fullFilePaths = paths(self.project.mainGroup, prefix: "")
+    let rootObjectId = try fields.string("rootObject")
+    guard let projectFields = objects[rootObjectId] else {
+      throw AllObjectsError.objectMissing(key: rootObjectId)
+    }
+
+    let project = try PBXProject(id: rootObjectId, fields: projectFields, allObjects: allObjects)
+    guard let mainGroup = project.mainGroup.value else {
+      throw AllObjectsError.objectMissing(key: project.mainGroup.id)
+    }
+
+    self.fields = fields
+    self.format = format
+    self.project = project
+    self.allObjects.fullFilePaths = paths(mainGroup, prefix: "")
   }
 
   static func projectName(from url: URL) throws -> String {
@@ -84,29 +94,33 @@ public class XCProjectFile {
 
     var ps: [String: Path] = [:]
 
-    for file in current.fileRefs {
+    let fileRefs = current.fileRefs.flatMap { $0.value }
+    for file in fileRefs {
+      guard let path = file.path else { continue }
+
       switch file.sourceTree {
       case .group:
         switch current.sourceTree {
         case .absolute:
-          ps[file.id] = .absolute(prefix + "/" + file.path!)
+          ps[file.id] = .absolute(prefix + "/" + path)
 
         case .group:
-          ps[file.id] = .relativeTo(.sourceRoot, prefix + "/" + file.path!)
+          ps[file.id] = .relativeTo(.sourceRoot, prefix + "/" + path)
 
         case .relativeTo(let sourceTreeFolder):
-          ps[file.id] = .relativeTo(sourceTreeFolder, prefix + "/" + file.path!)
+          ps[file.id] = .relativeTo(sourceTreeFolder, prefix + "/" + path)
         }
 
       case .absolute:
-        ps[file.id] = .absolute(file.path!)
+        ps[file.id] = .absolute(path)
 
       case let .relativeTo(sourceTreeFolder):
-        ps[file.id] = .relativeTo(sourceTreeFolder, file.path!)
+        ps[file.id] = .relativeTo(sourceTreeFolder, path)
       }
     }
 
-    for group in current.subGroups {
+    let subGroups = current.subGroups.flatMap { $0.value }
+    for group in subGroups {
       if let path = group.path {
         
         let str: String

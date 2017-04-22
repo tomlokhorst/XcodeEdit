@@ -24,7 +24,7 @@ extension XCProjectFile {
       try serializer.openStepSerialization.write(to: path, atomically: true, encoding: String.Encoding.utf8)
     }
     else {
-      let data = try PropertyListSerialization.data(fromPropertyList: dict, format: plformat, options: 0)
+      let data = try PropertyListSerialization.data(fromPropertyList: fields, format: plformat, options: 0)
       try data.write(to: path)
     }
   }
@@ -37,7 +37,7 @@ extension XCProjectFile {
       return serializer.openStepSerialization.data(using: String.Encoding.utf8)!
     }
     else {
-      return try PropertyListSerialization.data(fromPropertyList: dict, format: format, options: 0)
+      return try PropertyListSerialization.data(fromPropertyList: fields, format: format, options: 0)
     }
   }
 }
@@ -63,8 +63,10 @@ internal class Serializer {
 
   lazy var targetsByConfigId: [String: PBXNativeTarget] = {
     var dict: [String: PBXNativeTarget] = [:]
-    for target in self.projectFile.project.targets {
-      dict[target.buildConfigurationList.id] = target
+    for reference in self.projectFile.project.targets {
+      if let target = reference.value {
+        dict[target.buildConfigurationList.id] = target
+      }
     }
 
     return dict
@@ -90,8 +92,8 @@ internal class Serializer {
       "{",
     ]
 
-    for key in projectFile.dict.keys.sorted() {
-      let val: AnyObject = projectFile.dict[key]!
+    for key in projectFile.fields.keys.sorted() {
+      let val: AnyObject = projectFile.fields[key]!
 
       if key == "objects" {
 
