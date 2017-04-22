@@ -11,13 +11,13 @@ import Foundation
 public typealias Fields = [String: AnyObject]
 
 public /* abstract */ class PBXObject {
-  let id: String
+  let id: Guid
   var fields: Fields
   let allObjects: AllObjects
 
   public let isa: String
 
-  public required init(id: String, fields: Fields, allObjects: AllObjects) throws {
+  public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
     self.id = id
     self.fields = fields
     self.allObjects = allObjects
@@ -37,14 +37,14 @@ public class PBXProject : PBXContainer {
   public let mainGroup: Reference<PBXGroup>
   public let buildConfigurationList: Reference<XCConfigurationList>
 
-  public required init(id: String, fields: Fields, allObjects: AllObjects) throws {
+  public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
     self.developmentRegion = try fields.string("developmentRegion")
     self.hasScannedForEncodings = try fields.bool("hasScannedForEncodings")
     self.knownRegions = try fields.strings("knownRegions")
 
-    self.targets = allObjects.createReferences(ids: try fields.strings("targets"))
-    self.mainGroup = allObjects.createReference(id: try fields.string("mainGroup"))
-    self.buildConfigurationList = allObjects.createReference(id: try fields.string("buildConfigurationList"))
+    self.targets = allObjects.createReferences(ids: try fields.ids("targets"))
+    self.mainGroup = allObjects.createReference(id: try fields.id("mainGroup"))
+    self.buildConfigurationList = allObjects.createReference(id: try fields.id("buildConfigurationList"))
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
   }
@@ -62,8 +62,8 @@ public /* abstract */ class PBXProjectItem : PBXContainerItem {
 public class PBXBuildFile : PBXProjectItem {
   public let fileRef: Reference<PBXReference>?
 
-  public required init(id: String, fields: Fields, allObjects: AllObjects) throws {
-    self.fileRef = allObjects.createOptionalReference(id: try fields.optionalString("fileRef"))
+  public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
+    self.fileRef = allObjects.createOptionalReference(id: try fields.optionalId("fileRef"))
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
   }
@@ -73,8 +73,8 @@ public class PBXBuildFile : PBXProjectItem {
 public /* abstract */ class PBXBuildPhase : PBXProjectItem {
   public let files: [Reference<PBXBuildFile>]
 
-  public required init(id: String, fields: Fields, allObjects: AllObjects) throws {
-    self.files = allObjects.createReferences(ids: try fields.strings("files"))
+  public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
+    self.files = allObjects.createReferences(ids: try fields.ids("files"))
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
   }
@@ -83,7 +83,7 @@ public /* abstract */ class PBXBuildPhase : PBXProjectItem {
 public class PBXCopyFilesBuildPhase : PBXBuildPhase {
   public let name: String?
 
-  public required init(id: String, fields: Fields, allObjects: AllObjects) throws {
+  public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
     self.name = try fields.optionalString("name")
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
@@ -103,7 +103,7 @@ public class PBXShellScriptBuildPhase : PBXBuildPhase {
   public let name: String?
   public let shellScript: String
 
-  public required init(id: String, fields: Fields, allObjects: AllObjects) throws {
+  public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
     self.name = try fields.optionalString("name")
     self.shellScript = try fields.string("shellScript")
 
@@ -120,7 +120,7 @@ public class PBXBuildStyle : PBXProjectItem {
 public class XCBuildConfiguration : PBXBuildStyle {
   public let name: String
 
-  public required init(id: String, fields: Fields, allObjects: AllObjects) throws {
+  public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
     self.name = try fields.string("name")
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
@@ -133,11 +133,11 @@ public /* abstract */ class PBXTarget : PBXProjectItem {
   public let productName: String
   public let buildPhases: [Reference<PBXBuildPhase>]
 
-  public required init(id: String, fields: Fields, allObjects: AllObjects) throws {
-    self.buildConfigurationList = allObjects.createReference(id: try fields.string("buildConfigurationList"))
+  public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
+    self.buildConfigurationList = allObjects.createReference(id: try fields.id("buildConfigurationList"))
     self.name = try fields.string("name")
     self.productName = try fields.string("productName")
-    self.buildPhases = allObjects.createReferences(ids: try fields.strings("buildPhases"))
+    self.buildPhases = allObjects.createReferences(ids: try fields.ids("buildPhases"))
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
   }
@@ -160,7 +160,7 @@ public class PBXReference : PBXContainerItem {
   public let path: String?
   public let sourceTree: SourceTree
 
-  public required init(id: String, fields: Fields, allObjects: AllObjects) throws {
+  public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
     self.name = try fields.optionalString("name")
     self.path = try fields.optionalString("path")
 
@@ -187,8 +187,8 @@ public class PBXReferenceProxy : PBXReference {
 
   public let remoteRef: Reference<PBXContainerItemProxy>
 
-  public required init(id: String, fields: Fields, allObjects: AllObjects) throws {
-    self.remoteRef = allObjects.createReference(id: try fields.string("remoteRef"))
+  public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
+    self.remoteRef = allObjects.createReference(id: try fields.id("remoteRef"))
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
   }
@@ -214,8 +214,8 @@ public class PBXGroup : PBXReference {
   }
 
 
-  public required init(id: String, fields: Fields, allObjects: AllObjects) throws {
-    self.children = allObjects.createReferences(ids: try fields.strings("children"))
+  public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
+    self.children = allObjects.createReferences(ids: try fields.ids("children"))
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
   }

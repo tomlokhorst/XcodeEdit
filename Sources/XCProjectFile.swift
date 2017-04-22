@@ -59,17 +59,17 @@ public class XCProjectFile {
     }
 
     for (key, obj) in objects {
-      allObjects.objects[key] = try AllObjects.createObject(key, fields: obj, allObjects: allObjects)
+      allObjects.objects[Guid(key)] = try AllObjects.createObject(Guid(key), fields: obj, allObjects: allObjects)
     }
 
     let rootObjectId = try fields.string("rootObject")
     guard let projectFields = objects[rootObjectId] else {
-      throw AllObjectsError.objectMissing(key: rootObjectId)
+      throw AllObjectsError.objectMissing(id: Guid(rootObjectId))
     }
 
-    let project = try PBXProject(id: rootObjectId, fields: projectFields, allObjects: allObjects)
+    let project = try PBXProject(id: Guid(rootObjectId), fields: projectFields, allObjects: allObjects)
     guard let mainGroup = project.mainGroup.value else {
-      throw AllObjectsError.objectMissing(key: project.mainGroup.id)
+      throw AllObjectsError.objectMissing(id: project.mainGroup.id)
     }
 
     self.fields = fields
@@ -90,9 +90,9 @@ public class XCProjectFile {
     return last.substring(to: range.lowerBound)
   }
 
-  func paths(_ current: PBXGroup, prefix: String) -> [String: Path] {
+  func paths(_ current: PBXGroup, prefix: String) -> [Guid: Path] {
 
-    var ps: [String: Path] = [:]
+    var ps: [Guid: Path] = [:]
 
     let fileRefs = current.fileRefs.flatMap { $0.value }
     for file in fileRefs {

@@ -11,22 +11,33 @@ import Foundation
 public enum AllObjectsError: Error {
   case fieldMissing(key: String)
   case wrongType(key: String)
-  case invalidValue(key: String, value: String)
-  case objectMissing(key: String)
+  case objectMissing(id: Guid)
 }
 
-public struct Guid {
+public struct Guid : Hashable, Comparable {
   public let value: String
 
   public init(_ value: String) {
     self.value = value
+  }
+
+  static public func ==(lhs: Guid, rhs: Guid) -> Bool {
+    return lhs.value == rhs.value
+  }
+
+  public var hashValue: Int {
+    return value.hashValue
+  }
+
+  static public func <(lhs: Guid, rhs: Guid) -> Bool {
+    return lhs.value < rhs.value
   }
 }
 
 public struct Reference<Value : PBXObject> {
   let allObjects: AllObjects
 
-  public let id: String
+  public let id: Guid
   public var value: Value? {
     guard let object = allObjects.objects[id] as? Value else { return nil }
 
@@ -35,20 +46,20 @@ public struct Reference<Value : PBXObject> {
 }
 
 public class AllObjects {
-  var objects: [String: PBXObject] = [:]
-  var fullFilePaths: [GuidKey: Path] = [:]
-  var refCounts: [GuidKey: Int] = [:]
+  var objects: [Guid: PBXObject] = [:]
+  var fullFilePaths: [Guid: Path] = [:]
+  var refCounts: [Guid: Int] = [:]
 
-  func createReferences<Value: PBXObject>(ids: [GuidKey]) -> [Reference<Value>] {
+  func createReferences<Value: PBXObject>(ids: [Guid]) -> [Reference<Value>] {
     return ids.map(createReference)
   }
 
-  func createOptionalReference<Value: PBXObject>(id: GuidKey?) -> Reference<Value>? {
+  func createOptionalReference<Value: PBXObject>(id: Guid?) -> Reference<Value>? {
     guard let id = id else { return nil }
     return createReference(id: id)
   }
 
-  func createReference<Value: PBXObject>(id: GuidKey) -> Reference<Value> {
+  func createReference<Value: PBXObject>(id: Guid) -> Reference<Value> {
     let count = refCounts[id] ?? 0
     refCounts[id] = count + 1
 
@@ -79,7 +90,7 @@ public class AllObjects {
     }
   }
 
-  static func createObject(_ id: String, fields: Fields, allObjects: AllObjects) throws -> PBXObject {
+  static func createObject(_ id: Guid, fields: Fields, allObjects: AllObjects) throws -> PBXObject {
     guard let isa = fields["isa"] as? String else {
       throw AllObjectsError.fieldMissing(key: "isa")
     }
@@ -118,13 +129,10 @@ private let types: [String: PBXObject.Type] = [
   "XCVersionGroup": XCVersionGroup.self
 ]
 
-
-typealias GuidKey = String
-
-extension Dictionary where Key == String, Value == AnyObject {
-  mutating func set<Value>(key: String, reference: Reference<Value>?) {
+extension Dictionary where Key == Guid, Value == AnyObject {
+  mutating func set<Value>(key: Guid, reference: Reference<Value>?) {
     if let reference = reference {
-      self[key] = reference.id as NSString
+      self[key] = reference.id.value as NSString
     }
     else {
       self[key] = nil
@@ -133,6 +141,39 @@ extension Dictionary where Key == String, Value == AnyObject {
 }
 
 extension Dictionary where Key == String {
+
+  func id(_ key: String) throws -> Guid {
+    guard let val = self[key] else {
+      throw AllObjectsError.fieldMissing(key: key)
+    }
+    guard let value = val as? String else {
+      throw AllObjectsError.wrongType(key: key)
+    }
+
+    return Guid(value)
+  }
+
+  func optionalId(_ key: String) throws -> Guid? {
+    guard let val = self[key] else {
+      return nil
+    }
+    guard let value = val as? String else {
+      throw AllObjectsError.wrongType(key: key)
+    }
+
+    return Guid(value)
+  }
+
+  func ids(_ key: String) throws -> [Guid] {
+    guard let val = self[key] else {
+      throw AllObjectsError.fieldMissing(key: key)
+    }
+    guard let value = val as? [String] else {
+      throw AllObjectsError.wrongType(key: key)
+    }
+
+    return value.map(Guid.init)
+  }
 
   func bool(_ key: String) throws -> Bool {
     guard let val = self[key] else {
