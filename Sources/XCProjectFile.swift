@@ -12,6 +12,7 @@ public enum ProjectFileError : Error, CustomStringConvertible {
   case invalidData
   case notXcodeproj
   case missingPbxproj
+  case internalInconsistency([ReferenceError])
 
   public var description: String {
     switch self {
@@ -23,6 +24,23 @@ public enum ProjectFileError : Error, CustomStringConvertible {
 
     case .missingPbxproj:
       return "project.pbxproj file missing"
+
+    case .internalInconsistency(let errors):
+      var str = "project.pbxproj is internally inconsistent.\n\n"
+
+      for error in errors {
+        switch error {
+        case let .deadReference(type, id, keyPath, ref):
+          str += " - \(type) (\(id.value)) references missing \(keyPath) \(ref.value)\n"
+
+        case let .orphanObject(type, id):
+          str += " - \(type) (\(id.value)) is not used\n"
+        }
+      }
+
+      str += "\nPerhaps a merge conflict?\n"
+
+      return str
     }
   }
 }
@@ -33,14 +51,14 @@ public class XCProjectFile {
   var format: PropertyListSerialization.PropertyListFormat
   let allObjects = AllObjects()
 
-  public convenience init(xcodeprojURL: URL) throws {
+  public convenience init(xcodeprojURL: URL, ignoreReferenceErrors: Bool = false) throws {
     let pbxprojURL = xcodeprojURL.appendingPathComponent("project.pbxproj", isDirectory: false)
     let data = try Data(contentsOf: pbxprojURL)
 
-    try self.init(propertyListData: data)
+    try self.init(propertyListData: data, ignoreReferenceErrors: ignoreReferenceErrors)
   }
 
-  public convenience init(propertyListData data: Data) throws {
+  public convenience init(propertyListData data: Data, ignoreReferenceErrors: Bool = false) throws {
 
     let options = PropertyListSerialization.MutabilityOptions()
     var format: PropertyListSerialization.PropertyListFormat = PropertyListSerialization.PropertyListFormat.binary
@@ -50,10 +68,10 @@ public class XCProjectFile {
       throw ProjectFileError.invalidData
     }
 
-    try self.init(fields: fields, format: format)
+    try self.init(fields: fields, format: format, ignoreReferenceErrors: ignoreReferenceErrors)
   }
 
-  private init(fields: Fields, format: PropertyListSerialization.PropertyListFormat) throws {
+  private init(fields: Fields, format: PropertyListSerialization.PropertyListFormat, ignoreReferenceErrors: Bool = false) throws {
 
     guard let objects = fields["objects"] as? [String: Fields] else {
       throw AllObjectsError.wrongType(key: "objects")
@@ -71,6 +89,11 @@ public class XCProjectFile {
     let project = try PBXProject(id: rootObjectId, fields: projectFields, allObjects: allObjects)
     guard let mainGroup = project.mainGroup.value else {
       throw AllObjectsError.objectMissing(id: project.mainGroup.id)
+    }
+
+    if !ignoreReferenceErrors {
+      _ = allObjects.createReference(id: rootObjectId)
+      try allObjects.validateReferences()
     }
 
     self.fields = fields

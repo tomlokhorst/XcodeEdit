@@ -14,6 +14,11 @@ public enum AllObjectsError: Error {
   case objectMissing(id: Guid)
 }
 
+public enum ReferenceError: Error {
+  case deadReference(type: String, id: Guid, keyPath: String, ref: Guid)
+  case orphanObject(type: String, id: Guid)
+}
+
 public struct Guid : Hashable, Comparable {
   public let value: String
 
@@ -100,7 +105,87 @@ public class AllObjects {
     assertionFailure("Unknown PBXObject subclass isa=\(isa)")
     return try PBXObject(id: id, fields: fields, allObjects: allObjects)
   }
+
+  func validateReferences() throws {
+
+    let refKeys = Set(refCounts.keys)
+    let objKeys = Set(objects.keys)
+
+    let deadRefs = refKeys.subtracting(objKeys).sorted()
+    let orphanObjs = objKeys.subtracting(refKeys).sorted()
+
+    var errors: [ReferenceError] = []
+    for (id, object) in objects {
+
+      for (path, guid) in findGuids(object) {
+        if !objKeys.contains(guid) {
+          let error = ReferenceError.deadReference(type: object.isa, id: id, keyPath: path, ref: guid)
+          errors.append(error)
+        }
+      }
+    }
+
+    for id in orphanObjs {
+      guard let object = objects[id] else { continue }
+
+      let error = ReferenceError.orphanObject(type: object.isa, id: id)
+      errors.append(error)
+    }
+
+    if !deadRefs.isEmpty || !orphanObjs.isEmpty {
+      throw ProjectFileError.internalInconsistency(errors)
+    }
+  }
 }
+
+private func referenceGuid(_ obj: Any) -> Guid? {
+
+  // Should figure out a better way to test obj is of type Reference<T>
+  let m = Mirror(reflecting: obj)
+  guard m.displayStyle == Mirror.DisplayStyle.`struct` else { return nil }
+
+  return m.descendant("id") as? Guid
+}
+
+
+private func findGuids(_ obj: Any) -> [(String, Guid)] {
+
+  var result: [(String, Guid)] = []
+
+  for child in Mirror(reflecting: obj).children {
+
+    guard let label = child.label else { continue }
+    let value = child.value
+
+    let m = Mirror(reflecting: value)
+    if m.displayStyle == Mirror.DisplayStyle.`struct` {
+      if let guid = referenceGuid(value) {
+        result.append((label, guid))
+      }
+    }
+    if m.displayStyle == Mirror.DisplayStyle.optional
+      || m.displayStyle == Mirror.DisplayStyle.collection
+    {
+      for item in m.children {
+        if let guid = referenceGuid(item.value) {
+          result.append((label, guid))
+        }
+      }
+    }
+    if m.displayStyle == Mirror.DisplayStyle.optional {
+      if let element = m.children.first {
+        for item in Mirror(reflecting: element.value).children {
+          let vals = findGuids(item.value)
+            .map { (l, g) in ("\(label).\(l)", g) }
+          result.append(contentsOf: vals)
+        }
+      }
+    }
+  }
+
+  return result
+}
+
 
 private let types: [String: PBXObject.Type] = [
   "PBXProject": PBXProject.self,
@@ -125,115 +210,3 @@ private let types: [String: PBXObject.Type] = [
   "PBXVariantGroup": PBXVariantGroup.self,
   "XCVersionGroup": XCVersionGroup.self
 ]
-
-extension Dictionary where Key == Guid, Value == AnyObject {
-  mutating func set<Value>(key: Guid, reference: Reference<Value>?) {
-    if let reference = reference {
-      self[key] = reference.id.value as NSString
-    }
-    else {
-      self[key] = nil
-    }
-  }
-}
-
-extension Dictionary where Key == String {
-
-  func id(_ key: String) throws -> Guid {
-    guard let val = self[key] else {
-      throw AllObjectsError.fieldMissing(key: key)
-    }
-    guard let value = val as? String else {
-      throw AllObjectsError.wrongType(key: key)
-    }
-
-    return Guid(value)
-  }
-
-  func optionalId(_ key: String) throws -> Guid? {
-    guard let val = self[key] else {
-      return nil
-    }
-    guard let value = val as? String else {
-      throw AllObjectsError.wrongType(key: key)
-    }
-
-    return Guid(value)
-  }
-
-  func ids(_ key: String) throws -> [Guid] {
-    guard let val = self[key] else {
-      throw AllObjectsError.fieldMissing(key: key)
-    }
-    guard let value = val as? [String] else {
-      throw AllObjectsError.wrongType(key: key)
-    }
-
-    return value.map(Guid.init)
-  }
-
-  func bool(_ key: String) throws -> Bool {
-    guard let val = self[key] else {
-      throw AllObjectsError.fieldMissing(key: key)
-    }
-    guard let value = val as? String else {
-      throw AllObjectsError.wrongType(key: key)
-    }
-
-    switch value {
-    case "0":
-      return false
-
-    case "1":
-      return true
-
-    default:
-      throw AllObjectsError.wrongType(key: key)
-    }
-  }
-
-  func optionalString(_ key: String) throws -> String? {
-    guard let val = self[key] else {
-      return nil
-    }
-    guard let value = val as? String else {
-      throw AllObjectsError.wrongType(key: key)
-    }
-
-    return value
-  }
-
-  func string(_ key: String) throws -> String {
-    guard let val = self[key] else {
-      throw AllObjectsError.fieldMissing(key: key)
-    }
-    guard let value = val as? String else {
-      throw AllObjectsError.wrongType(key: key)
-    }
-
-    return value
-  }
-
-  func strings(_ key: String) throws -> [String] {
-    guard let val = self[key] else {
-      throw AllObjectsError.fieldMissing(key: key)
-    }
-    guard let value = val as? [String] else {
-      throw AllObjectsError.wrongType(key: key)
-    }
-
-    return value
-  }
-
-  func fields(_ key: String) throws -> [Fields] {
-    guard let val = self[key] else {
-      throw AllObjectsError.fieldMissing(key: key)
-    }
-    guard let value = val as? [Fields] else {
-      throw AllObjectsError.wrongType(key: key)
-    }
-
-    return value
-  }
-
-}
