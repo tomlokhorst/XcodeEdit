@@ -205,6 +205,7 @@ public class PBXGroup : PBXReference {
       return Reference(allObjects: childRef.allObjects, id: childRef.id)
     }
   }
+
   public var fileRefs: [Reference<PBXFileReference>] {
     return self.children.flatMap { childRef in
       guard let _ = childRef.value as? PBXFileReference else { return nil }
@@ -212,7 +213,6 @@ public class PBXGroup : PBXReference {
       return Reference(allObjects: childRef.allObjects, id: childRef.id)
     }
   }
-
 
   public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
     self.children = allObjects.createReferences(ids: try fields.ids("children"))

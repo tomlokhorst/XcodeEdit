@@ -74,7 +74,7 @@ internal class Serializer {
 
   lazy var buildPhaseByFileId: [Guid: PBXBuildPhase] = {
 
-    let buildPhases = self.projectFile.allObjects.objects.values.ofType(PBXBuildPhase.self)
+    let buildPhases = self.projectFile.allObjects.objects.values.flatMap { $0 as? PBXBuildPhase }
 
     var dict: [Guid: PBXBuildPhase] = [:]
     for buildPhase in buildPhases {

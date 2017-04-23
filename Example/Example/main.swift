@@ -30,7 +30,7 @@ print("Timeinterval: \(time)")
 
 // Print paths for all files in Resources build phases
 for target in proj.project.targets.flatMap({ $0.value }) {
-  for resourcesBuildPhase in target.buildPhases.ofType(PBXResourcesBuildPhase.self) {
+  for resourcesBuildPhase in target.buildPhases.flatMap({ $0.value }) {
     let files = resourcesBuildPhase.files.flatMap { $0.value }
     for file in files {
       if let fileReference = file.fileRef?.value as? PBXFileReference {

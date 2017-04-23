@@ -91,10 +91,7 @@ public class AllObjects {
   }
 
   static func createObject(_ id: Guid, fields: Fields, allObjects: AllObjects) throws -> PBXObject {
-    guard let isa = fields["isa"] as? String else {
-      throw AllObjectsError.fieldMissing(key: "isa")
-    }
-
+    let isa = try fields.string("isa")
     if let type = types[isa] {
       return try type.init(id: id, fields: fields, allObjects: allObjects)
     }

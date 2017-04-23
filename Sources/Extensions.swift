@@ -15,10 +15,6 @@ func += <KeyType, ValueType> (left: inout Dictionary<KeyType, ValueType>, right:
 }
 
 extension Sequence {
-  func ofType<T>(_ type: T.Type) -> [T] {
-    return self.flatMap { $0 as? T }
-  }
-
   func grouped<Key: Hashable>(by keySelector: (Iterator.Element) -> Key) -> [Key : [Iterator.Element]] {
     var groupedBy = Dictionary<Key, [Iterator.Element]>()
 

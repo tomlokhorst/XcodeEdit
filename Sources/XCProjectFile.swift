@@ -53,7 +53,8 @@ public class XCProjectFile {
     try self.init(fields: fields, format: format)
   }
 
-  init(fields: Fields, format: PropertyListSerialization.PropertyListFormat) throws {
+  private init(fields: Fields, format: PropertyListSerialization.PropertyListFormat) throws {
+
     guard let objects = fields["objects"] as? [String: Fields] else {
       throw AllObjectsError.wrongType(key: "objects")
     }
@@ -90,7 +91,7 @@ public class XCProjectFile {
     return last.substring(to: range.lowerBound)
   }
 
-  func paths(_ current: PBXGroup, prefix: String) -> [Guid: Path] {
+  private func paths(_ current: PBXGroup, prefix: String) -> [Guid: Path] {
 
     var ps: [Guid: Path] = [:]
 
