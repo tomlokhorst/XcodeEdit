@@ -63,12 +63,12 @@ public class XCProjectFile {
       allObjects.objects[Guid(key)] = try AllObjects.createObject(Guid(key), fields: obj, allObjects: allObjects)
     }
 
-    let rootObjectId = try fields.string("rootObject")
-    guard let projectFields = objects[rootObjectId] else {
-      throw AllObjectsError.objectMissing(id: Guid(rootObjectId))
+    let rootObjectId = Guid(try fields.string("rootObject"))
+    guard let projectFields = objects[rootObjectId.value] else {
+      throw AllObjectsError.objectMissing(id: rootObjectId)
     }
 
-    let project = try PBXProject(id: Guid(rootObjectId), fields: projectFields, allObjects: allObjects)
+    let project = try PBXProject(id: rootObjectId, fields: projectFields, allObjects: allObjects)
     guard let mainGroup = project.mainGroup.value else {
       throw AllObjectsError.objectMissing(id: project.mainGroup.id)
     }

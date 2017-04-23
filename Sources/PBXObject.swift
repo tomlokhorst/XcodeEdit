@@ -30,23 +30,43 @@ public /* abstract */ class PBXContainer : PBXObject {
 }
 
 public class PBXProject : PBXContainer {
+  public let buildConfigurationList: Reference<XCConfigurationList>
   public let developmentRegion: String
   public let hasScannedForEncodings: Bool
   public let knownRegions: [String]
-  public let targets: [Reference<PBXNativeTarget>]
   public let mainGroup: Reference<PBXGroup>
-  public let buildConfigurationList: Reference<XCConfigurationList>
+  public let targets: [Reference<PBXNativeTarget>]
+  public let projectReferences: [ProjectReference]?
 
   public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
     self.developmentRegion = try fields.string("developmentRegion")
     self.hasScannedForEncodings = try fields.bool("hasScannedForEncodings")
     self.knownRegions = try fields.strings("knownRegions")
 
-    self.targets = allObjects.createReferences(ids: try fields.ids("targets"))
-    self.mainGroup = allObjects.createReference(id: try fields.id("mainGroup"))
     self.buildConfigurationList = allObjects.createReference(id: try fields.id("buildConfigurationList"))
+    self.mainGroup = allObjects.createReference(id: try fields.id("mainGroup"))
+    self.targets = allObjects.createReferences(ids: try fields.ids("targets"))
+
+    if fields["projectReferences"] == nil {
+      self.projectReferences = nil
+    }
+    else {
+      let projectReferenceFields = try fields.fields("projectReferences")
+      self.projectReferences = try projectReferenceFields
+        .map { try ProjectReference(fields: $0, allObjects: allObjects) }
+    }
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
+
+  public class ProjectReference {
+    public let ProductGroup: Reference<PBXGroup>
+    public let ProjectRef: Reference<PBXFileReference>
+
+    public required init(fields: Fields, allObjects: AllObjects) throws {
+      self.ProductGroup = allObjects.createReference(id: try fields.id("ProductGroup"))
+      self.ProjectRef = allObjects.createReference(id: try fields.id("ProjectRef"))
+    }
   }
 }
 
@@ -132,12 +152,14 @@ public /* abstract */ class PBXTarget : PBXProjectItem {
   public let name: String
   public let productName: String
   public let buildPhases: [Reference<PBXBuildPhase>]
+  public let dependencies: [Reference<PBXTargetDependency>]
 
   public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
     self.buildConfigurationList = allObjects.createReference(id: try fields.id("buildConfigurationList"))
     self.name = try fields.string("name")
     self.productName = try fields.string("productName")
     self.buildPhases = allObjects.createReferences(ids: try fields.ids("buildPhases"))
+    self.dependencies = allObjects.createReferences(ids: try fields.ids("dependencies"))
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
   }
@@ -150,9 +172,23 @@ public class PBXNativeTarget : PBXTarget {
 }
 
 public class PBXTargetDependency : PBXProjectItem {
+  public let targetProxy: Reference<PBXContainerItemProxy>?
+
+  public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
+    self.targetProxy = allObjects.createReference(id: try fields.id("targetProxy"))
+
+    try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
 }
 
 public class XCConfigurationList : PBXProjectItem {
+  public let buildConfigurations: [Reference<XCBuildConfiguration>]
+
+  public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
+    self.buildConfigurations = allObjects.createReferences(ids: try fields.ids("buildConfigurations"))
+
+    try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
 }
 
 public class PBXReference : PBXContainerItem {
@@ -225,6 +261,13 @@ public class PBXVariantGroup : PBXGroup {
 }
 
 public class XCVersionGroup : PBXReference {
+  public let children: [Reference<PBXFileReference>]
+
+  public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
+    self.children = allObjects.createReferences(ids: try fields.ids("children"))
+
+    try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
 }
 
 

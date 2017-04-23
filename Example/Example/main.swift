@@ -26,7 +26,7 @@ try! proj.write(to: xcodeproj, format: PropertyListSerialization.PropertyListFor
 let time = Date().timeIntervalSince(start)
 print("Timeinterval: \(time)")
 
-//exit(0)
+exit(0)
 
 // Print paths for all files in Resources build phases
 for target in proj.project.targets.flatMap({ $0.value }) {
