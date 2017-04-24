@@ -29,7 +29,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		E22195AE1B7C6EDA00F58D3F /* Example */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Example; sourceTree = BUILT_PRODUCTS_DIR; };
+		E22195AE1B7C6EDA00F58D3F /* XcodeEdit-Example */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "XcodeEdit-Example"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E22195B11B7C6EDA00F58D3F /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		E242AE811E88E3FA00F4CCA5 /* AllObjects.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AllObjects.swift; path = ../Sources/AllObjects.swift; sourceTree = "<group>"; };
 		E262D4441B7E21190057CCEE /* XCProjectFile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = XCProjectFile.swift; path = ../Sources/XCProjectFile.swift; sourceTree = "<group>"; };
@@ -53,7 +53,7 @@
 		E22195A51B7C6EDA00F58D3F = {
 			isa = PBXGroup;
 			children = (
-				E22195B01B7C6EDA00F58D3F /* Example */,
+				E22195B01B7C6EDA00F58D3F /* XcodeEdit-Example */,
 				E262D4411B7E20AA0057CCEE /* XcodeEdit */,
 				E22195AF1B7C6EDA00F58D3F /* Products */,
 			);
@@ -65,17 +65,17 @@
 		E22195AF1B7C6EDA00F58D3F /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				E22195AE1B7C6EDA00F58D3F /* Example */,
+				E22195AE1B7C6EDA00F58D3F /* XcodeEdit-Example */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		E22195B01B7C6EDA00F58D3F /* Example */ = {
+		E22195B01B7C6EDA00F58D3F /* XcodeEdit-Example */ = {
 			isa = PBXGroup;
 			children = (
 				E22195B11B7C6EDA00F58D3F /* main.swift */,
 			);
-			path = Example;
+			path = "XcodeEdit-Example";
 			sourceTree = "<group>";
 		};
 		E262D4411B7E20AA0057CCEE /* XcodeEdit */ = {
@@ -94,9 +94,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		E22195AD1B7C6EDA00F58D3F /* Example */ = {
+		E22195AD1B7C6EDA00F58D3F /* XcodeEdit-Example */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E22195B51B7C6EDA00F58D3F /* Build configuration list for PBXNativeTarget "Example" */;
+			buildConfigurationList = E22195B51B7C6EDA00F58D3F /* Build configuration list for PBXNativeTarget "XcodeEdit-Example" */;
 			buildPhases = (
 				E22195AA1B7C6EDA00F58D3F /* Sources */,
 				E22195AB1B7C6EDA00F58D3F /* Frameworks */,
@@ -106,9 +106,9 @@
 			);
 			dependencies = (
 			);
-			name = Example;
-			productName = Example;
-			productReference = E22195AE1B7C6EDA00F58D3F /* Example */;
+			name = "XcodeEdit-Example";
+			productName = "XcodeEdit-Example";
+			productReference = E22195AE1B7C6EDA00F58D3F /* XcodeEdit-Example */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -127,7 +127,7 @@
 					};
 				};
 			};
-			buildConfigurationList = E22195A91B7C6EDA00F58D3F /* Build configuration list for PBXProject "Example" */;
+			buildConfigurationList = E22195A91B7C6EDA00F58D3F /* Build configuration list for PBXProject "XcodeEdit-Example" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -139,7 +139,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				E22195AD1B7C6EDA00F58D3F /* Example */,
+				E22195AD1B7C6EDA00F58D3F /* XcodeEdit-Example */,
 			);
 		};
 /* End PBXProject section */
@@ -265,7 +265,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		E22195A91B7C6EDA00F58D3F /* Build configuration list for PBXProject "Example" */ = {
+		E22195A91B7C6EDA00F58D3F /* Build configuration list for PBXProject "XcodeEdit-Example" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E22195B31B7C6EDA00F58D3F /* Debug */,
@@ -274,7 +274,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		E22195B51B7C6EDA00F58D3F /* Build configuration list for PBXNativeTarget "Example" */ = {
+		E22195B51B7C6EDA00F58D3F /* Build configuration list for PBXNativeTarget "XcodeEdit-Example" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E22195B61B7C6EDA00F58D3F /* Debug */,
