@@ -24,3 +24,7 @@ DerivedData
 # CocoaPods
 #
 Pods/
+
+# SPM
+#
+.build

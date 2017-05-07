@@ -7,6 +7,8 @@ The main goal of this project is to generate `project.pbxproj` files in the lega
 
 Currently, this project is mostly used to support [R.swift](https://github.com/mac-cain13/R.swift).
 
+Note: At this time, there are no APIs for modifying a project file.
+
 
 Usage
 -----
@@ -25,6 +27,7 @@ try! proj.write(to: xcodeproj, format: PropertyListSerialization.PropertyListFor
 Releases
 --------
 
+ - 1.1.0 - 2017-05-07 - Error types now public
  - **1.0.0** - 2017-03-28 - Rename from Xcode.swift to XcodeEdit
  - **0.3.0** - 2016-04-27 - Fixes to SourceTreeFolder
  - 0.2.1 - 2015-12-30 - Add missing PBXProxyReference class
