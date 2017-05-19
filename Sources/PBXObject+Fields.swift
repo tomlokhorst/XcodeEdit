@@ -8,7 +8,7 @@
 
 import Foundation
 
-extension Dictionary where Key == Guid, Value == AnyObject {
+internal extension Dictionary where Key == Guid, Value == AnyObject {
   mutating func set<Value>(key: Guid, reference: Reference<Value>?) {
     if let reference = reference {
       self[key] = reference.id.value as NSString
@@ -19,7 +19,7 @@ extension Dictionary where Key == Guid, Value == AnyObject {
   }
 }
 
-extension Dictionary where Key == String {
+internal extension Dictionary where Key == String {
 
   func id(_ key: String) throws -> Guid {
     guard let val = self[key] else {

@@ -40,9 +40,15 @@ public struct Guid : Hashable, Comparable {
 }
 
 public struct Reference<Value : PBXObject> {
-  let allObjects: AllObjects
+  internal let allObjects: AllObjects
 
   public let id: Guid
+
+  internal init(allObjects: AllObjects, id: Guid) {
+    self.allObjects = allObjects
+    self.id = id
+  }
+
   public var value: Value? {
     guard let object = allObjects.objects[id] as? Value else { return nil }
 
@@ -51,20 +57,20 @@ public struct Reference<Value : PBXObject> {
 }
 
 public class AllObjects {
-  var objects: [Guid: PBXObject] = [:]
-  var fullFilePaths: [Guid: Path] = [:]
-  var refCounts: [Guid: Int] = [:]
+  internal var objects: [Guid: PBXObject] = [:]
+  internal var fullFilePaths: [Guid: Path] = [:]
+  internal var refCounts: [Guid: Int] = [:]
 
-  func createReferences<Value: PBXObject>(ids: [Guid]) -> [Reference<Value>] {
+  internal func createReferences<Value: PBXObject>(ids: [Guid]) -> [Reference<Value>] {
     return ids.map(createReference)
   }
 
-  func createOptionalReference<Value: PBXObject>(id: Guid?) -> Reference<Value>? {
+  internal func createOptionalReference<Value: PBXObject>(id: Guid?) -> Reference<Value>? {
     guard let id = id else { return nil }
     return createReference(id: id)
   }
 
-  func createReference<Value: PBXObject>(id: Guid) -> Reference<Value> {
+  internal func createReference<Value: PBXObject>(id: Guid) -> Reference<Value> {
     let count = refCounts[id] ?? 0
     refCounts[id] = count + 1
 
@@ -72,7 +78,7 @@ public class AllObjects {
     return ref
   }
 
-  func createReference<Value: PBXObject>(value: Value) -> Reference<Value> {
+  internal func createReference<Value: PBXObject>(value: Value) -> Reference<Value> {
     let count = refCounts[value.id] ?? 0
     refCounts[value.id] = count + 1
 
@@ -81,7 +87,7 @@ public class AllObjects {
     return ref
   }
 
-  func removeReference<Value: PBXObject>(_ ref: Reference<Value>?) {
+  internal func removeReference<Value: PBXObject>(_ ref: Reference<Value>?) {
     guard let ref = ref else { return }
     guard let count = refCounts[ref.id], count > 0 else {
       assertionFailure("refCount[\(ref.id)] is \(refCounts[ref.id]?.description ?? "nil")")
@@ -95,7 +101,7 @@ public class AllObjects {
     }
   }
 
-  static func createObject(_ id: Guid, fields: Fields, allObjects: AllObjects) throws -> PBXObject {
+  internal static func createObject(_ id: Guid, fields: Fields, allObjects: AllObjects) throws -> PBXObject {
     let isa = try fields.string("isa")
     if let type = types[isa] {
       return try type.init(id: id, fields: fields, allObjects: allObjects)
@@ -106,7 +112,7 @@ public class AllObjects {
     return try PBXObject(id: id, fields: fields, allObjects: allObjects)
   }
 
-  func validateReferences() throws {
+  internal func validateReferences() throws {
 
     let refKeys = Set(refCounts.keys)
     let objKeys = Set(objects.keys)

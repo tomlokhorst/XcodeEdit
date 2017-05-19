@@ -102,7 +102,7 @@ public class XCProjectFile {
     self.allObjects.fullFilePaths = paths(mainGroup, prefix: "")
   }
 
-  static func projectName(from url: URL) throws -> String {
+  internal static func projectName(from url: URL) throws -> String {
 
     let subpaths = url.pathComponents
     guard let last = subpaths.last,

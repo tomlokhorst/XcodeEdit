@@ -11,10 +11,10 @@ import Foundation
 public typealias Fields = [String: AnyObject]
 
 public /* abstract */ class PBXObject {
-  let id: Guid
-  var fields: Fields
-  let allObjects: AllObjects
+  internal var fields: Fields
+  internal let allObjects: AllObjects
 
+  public let id: Guid
   public let isa: String
 
   public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
@@ -211,6 +211,13 @@ public class PBXReference : PBXContainerItem {
 }
 
 public class PBXFileReference : PBXReference {
+  public let lastKnownFileType: String?
+
+  public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
+    self.lastKnownFileType = try fields.optionalString("lastKnownFileType")
+
+    try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
 
   // convenience accessor
   public var fullPath: Path? {

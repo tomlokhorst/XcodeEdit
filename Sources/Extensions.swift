@@ -8,13 +8,13 @@
 
 import Foundation
 
-func += <KeyType, ValueType> (left: inout Dictionary<KeyType, ValueType>, right: Dictionary<KeyType, ValueType>) {
+internal func += <KeyType, ValueType> (left: inout Dictionary<KeyType, ValueType>, right: Dictionary<KeyType, ValueType>) {
   for (k, v) in right {
     left.updateValue(v, forKey: k)
   }
 }
 
-extension Sequence {
+internal extension Sequence {
   func grouped<Key: Hashable>(by keySelector: (Iterator.Element) -> Key) -> [Key : [Iterator.Element]] {
     var groupedBy = Dictionary<Key, [Iterator.Element]>()
 
