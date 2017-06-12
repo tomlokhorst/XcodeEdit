@@ -182,7 +182,7 @@ private func findGuids(_ obj: Any) -> [(String, Guid)] {
       if let element = m.children.first {
         for item in Mirror(reflecting: element.value).children {
           let vals = findGuids(item.value)
-            .map { (l, g) in ("\(label).\(l)", g) }
+            .map { arg in ("\(label).\(arg.0)", arg.1) }
           result.append(contentsOf: vals)
         }
       }

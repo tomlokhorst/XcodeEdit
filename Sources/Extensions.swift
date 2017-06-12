@@ -15,14 +15,12 @@ internal func += <KeyType, ValueType> (left: inout Dictionary<KeyType, ValueType
 }
 
 internal extension Sequence {
-  func grouped<Key: Hashable>(by keySelector: (Iterator.Element) -> Key) -> [Key : [Iterator.Element]] {
+  func grouped<Key>(by keySelector: (Iterator.Element) -> Key) -> [Key : [Iterator.Element]] {
     var groupedBy = Dictionary<Key, [Iterator.Element]>()
 
     for element in self {
       let key = keySelector(element)
-      var array = groupedBy.removeValue(forKey: key) ?? []
-      array.append(element)
-      groupedBy[key] = array
+      groupedBy[key, default: []].append(element)
     }
 
     return groupedBy
