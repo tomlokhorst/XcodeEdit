@@ -8,17 +8,13 @@
 
 import Foundation
 
-func += <KeyType, ValueType> (left: inout Dictionary<KeyType, ValueType>, right: Dictionary<KeyType, ValueType>) {
+internal func += <KeyType, ValueType> (left: inout Dictionary<KeyType, ValueType>, right: Dictionary<KeyType, ValueType>) {
   for (k, v) in right {
     left.updateValue(v, forKey: k)
   }
 }
 
-extension Sequence {
-  func ofType<T>(_ type: T.Type) -> [T] {
-    return self.flatMap { $0 as? T }
-  }
-
+internal extension Sequence {
   func grouped<Key>(by keySelector: (Iterator.Element) -> Key) -> [Key : [Iterator.Element]] {
     var groupedBy = Dictionary<Key, [Iterator.Element]>()
 

@@ -10,38 +10,186 @@ import Foundation
 
 public enum AllObjectsError: Error {
   case fieldMissing(key: String)
-  case invalidValue(key: String, value: String)
-  case objectMissing(key: String)
+  case wrongType(key: String)
+  case objectMissing(id: Guid)
 }
 
+public enum ReferenceError: Error {
+  case deadReference(type: String, id: Guid, keyPath: String, ref: Guid)
+  case orphanObject(type: String, id: Guid)
+}
 
-public class AllObjects {
-  var dict: [String: PBXObject] = [:]
-  var fullFilePaths: [String: Path] = [:]
+public struct Guid : Hashable, Comparable {
+  public let value: String
 
-  func object<T : PBXObject>(_ key: String) -> T {
-    let obj = dict[key]!
-    if let t = obj as? T {
-      return t
-    }
-
-    return T(id: key, fields: obj.fields, allObjects: self)
+  public init(_ value: String) {
+    self.value = value
   }
 
-  static func createObject(_ id: String, fields: Fields, allObjects: AllObjects) throws -> PBXObject {
-    guard let isa = fields["isa"] as? String else {
-      throw AllObjectsError.fieldMissing(key: "isa")
+  static public func ==(lhs: Guid, rhs: Guid) -> Bool {
+    return lhs.value == rhs.value
+  }
+
+  public var hashValue: Int {
+    return value.hashValue
+  }
+
+  static public func <(lhs: Guid, rhs: Guid) -> Bool {
+    return lhs.value < rhs.value
+  }
+}
+
+public struct Reference<Value : PBXObject> {
+  internal let allObjects: AllObjects
+
+  public let id: Guid
+
+  internal init(allObjects: AllObjects, id: Guid) {
+    self.allObjects = allObjects
+    self.id = id
+  }
+
+  public var value: Value? {
+    guard let object = allObjects.objects[id] as? Value else { return nil }
+
+    return object
+  }
+}
+
+public class AllObjects {
+  internal var objects: [Guid: PBXObject] = [:]
+  internal var fullFilePaths: [Guid: Path] = [:]
+  internal var refCounts: [Guid: Int] = [:]
+
+  internal func createReferences<Value>(ids: [Guid]) -> [Reference<Value>] {
+    return ids.map(createReference)
+  }
+
+  internal func createOptionalReference<Value>(id: Guid?) -> Reference<Value>? {
+    guard let id = id else { return nil }
+    return createReference(id: id)
+  }
+
+  internal func createReference<Value>(id: Guid) -> Reference<Value> {
+    refCounts[id, default: 0] += 1
+
+    let ref: Reference<Value> = Reference(allObjects: self, id: id)
+    return ref
+  }
+
+  internal func createReference<Value>(value: Value) -> Reference<Value> {
+    refCounts[value.id, default: 0] += 1
+
+    objects[value.id] = value
+    let ref: Reference<Value> = Reference(allObjects: self, id: value.id)
+    return ref
+  }
+
+  internal func removeReference<Value>(_ ref: Reference<Value>?) {
+    guard let ref = ref else { return }
+    guard let count = refCounts[ref.id], count > 0 else {
+      assertionFailure("refCount[\(ref.id)] is \(refCounts[ref.id]?.description ?? "nil")")
+      return
     }
 
+    refCounts[ref.id] = count - 1
+
+    if count == 1 {
+      objects[ref.id] = nil
+    }
+  }
+
+  internal static func createObject(_ id: Guid, fields: Fields, allObjects: AllObjects) throws -> PBXObject {
+    let isa = try fields.string("isa")
     if let type = types[isa] {
-      return type.init(id: id, fields: fields, allObjects: allObjects)
+      return try type.init(id: id, fields: fields, allObjects: allObjects)
     }
 
     // Fallback
     assertionFailure("Unknown PBXObject subclass isa=\(isa)")
-    return PBXObject(id: id, fields: fields, allObjects: allObjects)
+    return try PBXObject(id: id, fields: fields, allObjects: allObjects)
+  }
+
+  internal func validateReferences() throws {
+
+    let refKeys = Set(refCounts.keys)
+    let objKeys = Set(objects.keys)
+
+    let deadRefs = refKeys.subtracting(objKeys).sorted()
+    let orphanObjs = objKeys.subtracting(refKeys).sorted()
+
+    var errors: [ReferenceError] = []
+    for (id, object) in objects {
+
+      for (path, guid) in findGuids(object) {
+        if !objKeys.contains(guid) {
+          let error = ReferenceError.deadReference(type: object.isa, id: id, keyPath: path, ref: guid)
+          errors.append(error)
+        }
+      }
+    }
+
+    for id in orphanObjs {
+      guard let object = objects[id] else { continue }
+
+      let error = ReferenceError.orphanObject(type: object.isa, id: id)
+      errors.append(error)
+    }
+
+    if !deadRefs.isEmpty || !orphanObjs.isEmpty {
+      throw ProjectFileError.internalInconsistency(errors)
+    }
   }
 }
+
+private func referenceGuid(_ obj: Any) -> Guid? {
+
+  // Should figure out a better way to test obj is of type Reference<T>
+  let m = Mirror(reflecting: obj)
+  guard m.displayStyle == Mirror.DisplayStyle.`struct` else { return nil }
+
+  return m.descendant("id") as? Guid
+}
+
+
+private func findGuids(_ obj: Any) -> [(String, Guid)] {
+
+  var result: [(String, Guid)] = []
+
+  for child in Mirror(reflecting: obj).children {
+
+    guard let label = child.label else { continue }
+    let value = child.value
+
+    let m = Mirror(reflecting: value)
+    if m.displayStyle == Mirror.DisplayStyle.`struct` {
+      if let guid = referenceGuid(value) {
+        result.append((label, guid))
+      }
+    }
+    if m.displayStyle == Mirror.DisplayStyle.optional
+      || m.displayStyle == Mirror.DisplayStyle.collection
+    {
+      for item in m.children {
+        if let guid = referenceGuid(item.value) {
+          result.append((label, guid))
+        }
+      }
+    }
+    if m.displayStyle == Mirror.DisplayStyle.optional {
+      if let element = m.children.first {
+        for item in Mirror(reflecting: element.value).children {
+          let vals = findGuids(item.value)
+            .map { arg in ("\(label).\(arg.0)", arg.1) }
+          result.append(contentsOf: vals)
+        }
+      }
+    }
+  }
+
+  return result
+}
+
 
 private let types: [String: PBXObject.Type] = [
   "PBXProject": PBXProject.self,
@@ -66,38 +214,3 @@ private let types: [String: PBXObject.Type] = [
   "PBXVariantGroup": PBXVariantGroup.self,
   "XCVersionGroup": XCVersionGroup.self
 ]
-
-
-typealias GuidKey = String
-
-extension Dictionary {
-  internal func key(_ keyString: String) throws -> GuidKey {
-    guard let key = keyString as? Key, let val = self[key] as? GuidKey else {
-      throw AllObjectsError.fieldMissing(key: keyString)
-    }
-
-    return val
-  }
-
-  internal func keys(_ keyString: String) throws -> [GuidKey] {
-    guard let key = keyString as? Key, let val = self[key] as? [GuidKey] else {
-      throw AllObjectsError.fieldMissing(key: keyString)
-    }
-
-    return val
-  }
-
-  internal func field<T>(_ keyString: String) throws -> T {
-    guard let key = keyString as? Key, let val = self[key] as? T else {
-      throw AllObjectsError.fieldMissing(key: keyString)
-    }
-
-    return val
-  }
-
-  internal func optionalField<T>(_ keyString: String) -> T? {
-    guard let key = keyString as? Key else { return nil }
-
-    return self[key] as? T
-  }
-}
