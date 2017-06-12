@@ -71,16 +71,14 @@ public class AllObjects {
   }
 
   internal func createReference<Value>(id: Guid) -> Reference<Value> {
-    let count = refCounts[id] ?? 0
-    refCounts[id] = count + 1
+    refCounts[id, default: 0] += 1
 
     let ref: Reference<Value> = Reference(allObjects: self, id: id)
     return ref
   }
 
   internal func createReference<Value>(value: Value) -> Reference<Value> {
-    let count = refCounts[value.id] ?? 0
-    refCounts[value.id] = count + 1
+    refCounts[value.id, default: 0] += 1
 
     objects[value.id] = value
     let ref: Reference<Value> = Reference(allObjects: self, id: value.id)
