@@ -61,16 +61,16 @@ public class AllObjects {
   internal var fullFilePaths: [Guid: Path] = [:]
   internal var refCounts: [Guid: Int] = [:]
 
-  internal func createReferences<Value: PBXObject>(ids: [Guid]) -> [Reference<Value>] {
+  internal func createReferences<Value>(ids: [Guid]) -> [Reference<Value>] {
     return ids.map(createReference)
   }
 
-  internal func createOptionalReference<Value: PBXObject>(id: Guid?) -> Reference<Value>? {
+  internal func createOptionalReference<Value>(id: Guid?) -> Reference<Value>? {
     guard let id = id else { return nil }
     return createReference(id: id)
   }
 
-  internal func createReference<Value: PBXObject>(id: Guid) -> Reference<Value> {
+  internal func createReference<Value>(id: Guid) -> Reference<Value> {
     let count = refCounts[id] ?? 0
     refCounts[id] = count + 1
 
@@ -78,7 +78,7 @@ public class AllObjects {
     return ref
   }
 
-  internal func createReference<Value: PBXObject>(value: Value) -> Reference<Value> {
+  internal func createReference<Value>(value: Value) -> Reference<Value> {
     let count = refCounts[value.id] ?? 0
     refCounts[value.id] = count + 1
 
@@ -87,7 +87,7 @@ public class AllObjects {
     return ref
   }
 
-  internal func removeReference<Value: PBXObject>(_ ref: Reference<Value>?) {
+  internal func removeReference<Value>(_ ref: Reference<Value>?) {
     guard let ref = ref else { return }
     guard let count = refCounts[ref.id], count > 0 else {
       assertionFailure("refCount[\(ref.id)] is \(refCounts[ref.id]?.description ?? "nil")")
