@@ -15,18 +15,11 @@ internal func += <KeyType, ValueType> (left: inout Dictionary<KeyType, ValueType
 }
 
 internal extension Sequence {
-  func grouped<Key>(by keySelector: (Iterator.Element) -> Key) -> [Key : [Iterator.Element]] {
-    var groupedBy = Dictionary<Key, [Iterator.Element]>()
-
-    for element in self {
-      let key = keySelector(element)
-      groupedBy[key, default: []].append(element)
-    }
-
-    return groupedBy
+  func grouped<Key>(by keyForValue: (Element) -> Key) -> [Key: [Element]] {
+    return Dictionary(grouping: self, by: keyForValue)
   }
 
-  func sorted<U: Comparable>(by keySelector: (Iterator.Element) -> U) -> [Iterator.Element] {
-    return self.sorted { keySelector($0) < keySelector($1) }
+  func sorted<U: Comparable>(by comparableForValue: (Element) -> U) -> [Iterator.Element] {
+    return self.sorted { comparableForValue($0) < comparableForValue($1) }
   }
 }

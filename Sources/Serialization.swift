@@ -101,7 +101,8 @@ internal class Serializer {
 
         let groupedObjects = projectFile.allObjects.objects.values
           .grouped { $0.isa }
-          .sorted { $0.0 }
+          .map { (isa: $0.0, objects: $0.1) }
+          .sorted { $0.isa }
 
         for (isa, objects) in groupedObjects {
           lines.append("")
