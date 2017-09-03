@@ -111,7 +111,7 @@ public class XCProjectFile {
       throw ProjectFileError.notXcodeproj
     }
 
-    return last.substring(to: range.lowerBound)
+    return String(last[..<range.lowerBound])
   }
 
   private func paths(_ current: PBXGroup, prefix: String) -> [Guid: Path] {
