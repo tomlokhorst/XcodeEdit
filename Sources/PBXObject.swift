@@ -8,7 +8,7 @@
 
 import Foundation
 
-public typealias Fields = [String: AnyObject]
+public typealias Fields = [String: Any]
 
 public /* abstract */ class PBXObject {
   internal var fields: Fields
@@ -148,20 +148,33 @@ public class XCBuildConfiguration : PBXBuildStyle {
 }
 
 public /* abstract */ class PBXTarget : PBXProjectItem {
+
   public let buildConfigurationList: Reference<XCConfigurationList>
   public let name: String
   public let productName: String
-  public let buildPhases: [Reference<PBXBuildPhase>]
+  private var _buildPhases: [Reference<PBXBuildPhase>]
   public let dependencies: [Reference<PBXTargetDependency>]
 
   public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
     self.buildConfigurationList = allObjects.createReference(id: try fields.id("buildConfigurationList"))
     self.name = try fields.string("name")
     self.productName = try fields.string("productName")
-    self.buildPhases = allObjects.createReferences(ids: try fields.ids("buildPhases"))
+    self._buildPhases = allObjects.createReferences(ids: try fields.ids("buildPhases"))
     self.dependencies = allObjects.createReferences(ids: try fields.ids("dependencies"))
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
+
+  public var buildPhases: [Reference<PBXBuildPhase>] {
+    return _buildPhases
+  }
+
+  // Custom function for R.swift
+  public func addBuildPhase(_ reference: Reference<PBXBuildPhase>) {
+    if _buildPhases.contains(reference) { return }
+
+    _buildPhases.insert(reference, at: 0)
+    fields["buildPhases"] = _buildPhases.map { $0.id.value }
   }
 }
 

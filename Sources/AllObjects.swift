@@ -39,7 +39,7 @@ public struct Guid : Hashable, Comparable {
   }
 }
 
-public struct Reference<Value : PBXObject> {
+public struct Reference<Value : PBXObject> : Hashable, Comparable {
   internal let allObjects: AllObjects
 
   public let id: Guid
@@ -53,6 +53,18 @@ public struct Reference<Value : PBXObject> {
     guard let object = allObjects.objects[id] as? Value else { return nil }
 
     return object
+  }
+
+  static public func ==(lhs: Reference<Value>, rhs: Reference<Value>) -> Bool {
+    return lhs.id == rhs.id
+  }
+
+  public var hashValue: Int {
+    return id.hashValue
+  }
+
+  static public func <(lhs: Reference<Value>, rhs: Reference<Value>) -> Bool {
+    return lhs.id < rhs.id
   }
 }
 
