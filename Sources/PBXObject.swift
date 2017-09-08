@@ -251,29 +251,39 @@ public class PBXReferenceProxy : PBXReference {
 }
 
 public class PBXGroup : PBXReference {
-  public let children: [Reference<PBXReference>]
+  private var _children: [Reference<PBXReference>]
 
-  // convenience accessors
+  public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
+    self._children = allObjects.createReferences(ids: try fields.ids("children"))
+
+    try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
+
+  public var children: [Reference<PBXReference>] {
+    return _children
+  }
+
   public var subGroups: [Reference<PBXGroup>] {
-    return self.children.flatMap { childRef in
+    return _children.flatMap { childRef in
       guard let _ = childRef.value as? PBXGroup else { return nil }
-
       return Reference(allObjects: childRef.allObjects, id: childRef.id)
     }
   }
 
   public var fileRefs: [Reference<PBXFileReference>] {
-    return self.children.flatMap { childRef in
+    return _children.flatMap { childRef in
       guard let _ = childRef.value as? PBXFileReference else { return nil }
-
       return Reference(allObjects: childRef.allObjects, id: childRef.id)
     }
   }
 
-  public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
-    self.children = allObjects.createReferences(ids: try fields.ids("children"))
+  // Custom function for R.swift
+  public func addFileReference(_ fileReference: Reference<PBXFileReference>) {
+    if fileRefs.contains(fileReference) { return }
 
-    try super.init(id: id, fields: fields, allObjects: allObjects)
+    let reference = Reference<PBXReference>(allObjects: fileReference.allObjects, id: fileReference.id)
+    _children.insert(reference, at: 0)
+    fields["children"] = _children.map { $0.id.value }
   }
 }
 
