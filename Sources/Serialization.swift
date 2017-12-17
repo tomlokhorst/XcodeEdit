@@ -24,7 +24,7 @@ extension XCProjectFile {
       try serializer.openStepSerialization.write(to: path, atomically: true, encoding: String.Encoding.utf8)
     }
     else {
-      let data = try PropertyListSerialization.data(fromPropertyList: dict, format: plformat, options: 0)
+      let data = try PropertyListSerialization.data(fromPropertyList: fields, format: plformat, options: 0)
       try data.write(to: path)
     }
   }
@@ -37,7 +37,7 @@ extension XCProjectFile {
       return serializer.openStepSerialization.data(using: String.Encoding.utf8)!
     }
     else {
-      return try PropertyListSerialization.data(fromPropertyList: dict, format: format, options: 0)
+      return try PropertyListSerialization.data(fromPropertyList: fields, format: format, options: 0)
     }
   }
 }
@@ -61,20 +61,22 @@ internal class Serializer {
     self.projectFile = projectFile
   }
 
-  lazy var targetsByConfigId: [String: PBXNativeTarget] = {
-    var dict: [String: PBXNativeTarget] = [:]
-    for target in self.projectFile.project.targets {
-      dict[target.buildConfigurationList.id] = target
+  lazy var targetsByConfigId: [Guid: PBXNativeTarget] = {
+    var dict: [Guid: PBXNativeTarget] = [:]
+    for reference in self.projectFile.project.targets {
+      if let target = reference.value {
+        dict[target.buildConfigurationList.id] = target
+      }
     }
 
     return dict
   }()
 
-  lazy var buildPhaseByFileId: [String: PBXBuildPhase] = {
+  lazy var buildPhaseByFileId: [Guid: PBXBuildPhase] = {
 
-    let buildPhases = self.projectFile.allObjects.dict.values.ofType(PBXBuildPhase.self)
+    let buildPhases = self.projectFile.allObjects.objects.values.flatMap { $0 as? PBXBuildPhase }
 
-    var dict: [String: PBXBuildPhase] = [:]
+    var dict: [Guid: PBXBuildPhase] = [:]
     for buildPhase in buildPhases {
       for file in buildPhase.files {
         dict[file.id] = buildPhase
@@ -90,16 +92,17 @@ internal class Serializer {
       "{",
     ]
 
-    for key in projectFile.dict.keys.sorted() {
-      let val: AnyObject = projectFile.dict[key]!
+    for key in projectFile.fields.keys.sorted() {
+      let val: AnyObject = projectFile.fields[key]!
 
       if key == "objects" {
 
         lines.append("\tobjects = {")
 
-        let groupedObjects = projectFile.allObjects.dict.values
+        let groupedObjects = projectFile.allObjects.objects.values
           .grouped { $0.isa }
-          .sorted { $0.0 }
+          .map { (isa: $0.0, objects: $0.1) }
+          .sorted { $0.isa }
 
         for (isa, objects) in groupedObjects {
           lines.append("")
@@ -109,7 +112,7 @@ internal class Serializer {
 
             let multiline = isa != "PBXBuildFile" && isa != "PBXFileReference"
 
-            let parts = rows(type: isa, objKey: object.id, multiline: multiline, fields: object.fields)
+            let parts = rows(type: isa, objectId: object.id, multiline: multiline, fields: object.fields)
             if multiline {
               for ln in parts {
                 lines.append("\t\t" + ln)
@@ -142,12 +145,12 @@ internal class Serializer {
     return lines.joined(separator: "\n")
   }
 
-  func comment(forKey key: String) -> String? {
-    if key == projectFile.project.id {
+  func comment(id: Guid) -> String? {
+    if id == projectFile.project.id {
       return "Project object"
     }
 
-    if let obj = projectFile.allObjects.dict[key] {
+    if let obj = projectFile.allObjects.objects[id] {
       if let ref = obj as? PBXReference {
         return ref.name ?? ref.path
       }
@@ -176,11 +179,11 @@ internal class Serializer {
         return "Sources"
       }
       if let buildFile = obj as? PBXBuildFile {
-        if let buildPhase = buildPhaseByFileId[key],
-          let group = comment(forKey: buildPhase.id) {
+        if let buildPhase = buildPhaseByFileId[id],
+          let group = comment(id: buildPhase.id) {
 
           if let fileRefId = buildFile.fileRef?.id {
-            if let fileRef = comment(forKey: fileRefId) {
+            if let fileRef = comment(id: fileRefId) {
               return "\(fileRef) in \(group)"
             }
           }
@@ -190,7 +193,7 @@ internal class Serializer {
         }
       }
       if obj is XCConfigurationList {
-        if let target = targetsByConfigId[key] {
+        if let target = targetsByConfigId[id] {
           return "Build configuration list for \(target.isa) \"\(target.name)\""
         }
         return "Build configuration list for PBXProject \"\(projectName)\""
@@ -231,7 +234,7 @@ internal class Serializer {
         let str = valStr(valItem)
 
         var extraComment = ""
-        if let c = comment(forKey: valItem) {
+        if let c = comment(id: Guid(valItem)) {
           extraComment = " /* \(c) */"
         }
 
@@ -304,7 +307,7 @@ internal class Serializer {
       let str = valStr("\(val)")
 
       var extraComment = "";
-      if let c = comment(forKey: str) {
+      if let c = comment(id: Guid(str)) {
         extraComment = " /* \(c) */"
       }
 
@@ -323,7 +326,7 @@ internal class Serializer {
     return parts
   }
 
-  func rows(type: String, objKey: String, multiline: Bool, fields: Fields) -> [String] {
+  func rows(type: String, objectId: Guid, multiline: Bool, fields: Fields) -> [String] {
 
     var parts: [String] = []
     if multiline {
@@ -343,11 +346,11 @@ internal class Serializer {
     }
 
     var objComment = ""
-    if let c = comment(forKey: objKey) {
+    if let c = comment(id: objectId) {
       objComment = " /* \(c) */"
     }
 
-    let opening = "\(objKey)\(objComment) = {"
+    let opening = "\(objectId.value)\(objComment) = {"
     let closing = "};"
 
     if multiline {

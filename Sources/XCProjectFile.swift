@@ -12,6 +12,7 @@ public enum ProjectFileError : Error, CustomStringConvertible {
   case invalidData
   case notXcodeproj
   case missingPbxproj
+  case internalInconsistency([ReferenceError])
 
   public var description: String {
     switch self {
@@ -23,52 +24,85 @@ public enum ProjectFileError : Error, CustomStringConvertible {
 
     case .missingPbxproj:
       return "project.pbxproj file missing"
+
+    case .internalInconsistency(let errors):
+      var str = "project.pbxproj is internally inconsistent.\n\n"
+
+      for error in errors {
+        switch error {
+        case let .deadReference(type, id, keyPath, ref):
+          str += " - \(type) (\(id.value)) references missing \(keyPath) \(ref.value)\n"
+
+        case let .orphanObject(type, id):
+          str += " - \(type) (\(id.value)) is not used\n"
+        }
+      }
+
+      str += "\nPerhaps a merge conflict?\n"
+
+      return str
     }
   }
 }
 
 public class XCProjectFile {
   public let project: PBXProject
-  let dict: Fields
+  let fields: Fields
   var format: PropertyListSerialization.PropertyListFormat
   let allObjects = AllObjects()
 
-  public convenience init(xcodeprojURL: URL) throws {
+  public convenience init(xcodeprojURL: URL, ignoreReferenceErrors: Bool = false) throws {
     let pbxprojURL = xcodeprojURL.appendingPathComponent("project.pbxproj", isDirectory: false)
     let data = try Data(contentsOf: pbxprojURL)
 
-    try self.init(propertyListData: data)
+    try self.init(propertyListData: data, ignoreReferenceErrors: ignoreReferenceErrors)
   }
 
-  public convenience init(propertyListData data: Data) throws {
+  public convenience init(propertyListData data: Data, ignoreReferenceErrors: Bool = false) throws {
 
     let options = PropertyListSerialization.MutabilityOptions()
     var format: PropertyListSerialization.PropertyListFormat = PropertyListSerialization.PropertyListFormat.binary
     let obj = try PropertyListSerialization.propertyList(from: data, options: options, format: &format)
 
-    guard let dict = obj as? Fields else {
+    guard let fields = obj as? Fields else {
       throw ProjectFileError.invalidData
     }
 
-    self.init(dict: dict, format: format)
+    try self.init(fields: fields, format: format, ignoreReferenceErrors: ignoreReferenceErrors)
   }
 
-  init(dict: Fields, format: PropertyListSerialization.PropertyListFormat) {
-    self.dict = dict
-    self.format = format
-    let objects = dict["objects"] as! [String: Fields]
+  private init(fields: Fields, format: PropertyListSerialization.PropertyListFormat, ignoreReferenceErrors: Bool = false) throws {
 
-    for (key, obj) in objects {
-      allObjects.dict[key] = try! AllObjects.createObject(key, fields: obj, allObjects: allObjects)
+    guard let objects = fields["objects"] as? [String: Fields] else {
+      throw AllObjectsError.wrongType(key: "objects")
     }
 
-    let rootObjectId = dict["rootObject"]! as! String
-    let projDict = objects[rootObjectId]!
-    self.project = PBXProject(id: rootObjectId, fields: projDict, allObjects: allObjects)
-    self.allObjects.fullFilePaths = paths(self.project.mainGroup, prefix: "")
+    for (key, obj) in objects {
+      allObjects.objects[Guid(key)] = try AllObjects.createObject(Guid(key), fields: obj, allObjects: allObjects)
+    }
+
+    let rootObjectId = Guid(try fields.string("rootObject"))
+    guard let projectFields = objects[rootObjectId.value] else {
+      throw AllObjectsError.objectMissing(id: rootObjectId)
+    }
+
+    let project = try PBXProject(id: rootObjectId, fields: projectFields, allObjects: allObjects)
+    guard let mainGroup = project.mainGroup.value else {
+      throw AllObjectsError.objectMissing(id: project.mainGroup.id)
+    }
+
+    if !ignoreReferenceErrors {
+      _ = allObjects.createReference(id: rootObjectId)
+      try allObjects.validateReferences()
+    }
+
+    self.fields = fields
+    self.format = format
+    self.project = project
+    self.allObjects.fullFilePaths = paths(mainGroup, prefix: "")
   }
 
-  static func projectName(from url: URL) throws -> String {
+  internal static func projectName(from url: URL) throws -> String {
 
     let subpaths = url.pathComponents
     guard let last = subpaths.last,
@@ -77,36 +111,40 @@ public class XCProjectFile {
       throw ProjectFileError.notXcodeproj
     }
 
-    return last.substring(to: range.lowerBound)
+    return String(last[..<range.lowerBound])
   }
 
-  func paths(_ current: PBXGroup, prefix: String) -> [String: Path] {
+  private func paths(_ current: PBXGroup, prefix: String) -> [Guid: Path] {
 
-    var ps: [String: Path] = [:]
+    var ps: [Guid: Path] = [:]
 
-    for file in current.fileRefs {
+    let fileRefs = current.fileRefs.flatMap { $0.value }
+    for file in fileRefs {
+      guard let path = file.path else { continue }
+
       switch file.sourceTree {
       case .group:
         switch current.sourceTree {
         case .absolute:
-          ps[file.id] = .absolute(prefix + "/" + file.path!)
+          ps[file.id] = .absolute(prefix + "/" + path)
 
         case .group:
-          ps[file.id] = .relativeTo(.sourceRoot, prefix + "/" + file.path!)
+          ps[file.id] = .relativeTo(.sourceRoot, prefix + "/" + path)
 
         case .relativeTo(let sourceTreeFolder):
-          ps[file.id] = .relativeTo(sourceTreeFolder, prefix + "/" + file.path!)
+          ps[file.id] = .relativeTo(sourceTreeFolder, prefix + "/" + path)
         }
 
       case .absolute:
-        ps[file.id] = .absolute(file.path!)
+        ps[file.id] = .absolute(path)
 
       case let .relativeTo(sourceTreeFolder):
-        ps[file.id] = .relativeTo(sourceTreeFolder, file.path!)
+        ps[file.id] = .relativeTo(sourceTreeFolder, path)
       }
     }
 
-    for group in current.subGroups {
+    let subGroups = current.subGroups.flatMap { $0.value }
+    for group in subGroups {
       if let path = group.path {
         
         let str: String
