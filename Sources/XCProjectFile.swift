@@ -102,14 +102,6 @@ public class XCProjectFile {
     self.allObjects.fullFilePaths = paths(mainGroup, prefix: "")
   }
 
-  public func makeObject<T: PBXObject>(type: T.Type, id: Guid, fields: Fields) throws -> T {
-    return try T(id: id, fields: fields, allObjects: allObjects)
-  }
-
-  public func addReference<Value>(value: Value) -> Reference<Value> {
-    return allObjects.createReference(value: value)
-  }
-
   internal static func projectName(from url: URL) throws -> String {
 
     let subpaths = url.pathComponents

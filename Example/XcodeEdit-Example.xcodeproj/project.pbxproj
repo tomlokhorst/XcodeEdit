@@ -13,6 +13,7 @@
 		E292B9C71B9236D900D75DE2 /* Serialization.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9C61B9236D900D75DE2 /* Serialization.swift */; };
 		E292B9CE1B932F3200D75DE2 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9CC1B932F3200D75DE2 /* Extensions.swift */; };
 		E292B9CF1B932F3200D75DE2 /* PBXObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9CD1B932F3200D75DE2 /* PBXObject.swift */; };
+		E29B539C1FF53CC100D64F5E /* XCProjectFile+Rswift.swift in Sources */ = {isa = PBXBuildFile; fileRef = E29B539B1FF53CC100D64F5E /* XCProjectFile+Rswift.swift */; };
 		E2E755AD1FF40C9600177FED /* PBXIdentifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E755AC1FF40C9600177FED /* PBXIdentifier.swift */; };
 		E2FD157C1EACCA7E00772CF1 /* PBXObject+Fields.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2FD157B1EACCA7E00772CF1 /* PBXObject+Fields.swift */; };
 /* End PBXBuildFile section */
@@ -37,6 +38,7 @@
 		E292B9C61B9236D900D75DE2 /* Serialization.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Serialization.swift; path = ../Sources/Serialization.swift; sourceTree = "<group>"; };
 		E292B9CC1B932F3200D75DE2 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Extensions.swift; path = ../Sources/Extensions.swift; sourceTree = "<group>"; };
 		E292B9CD1B932F3200D75DE2 /* PBXObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PBXObject.swift; path = ../Sources/PBXObject.swift; sourceTree = "<group>"; };
+		E29B539B1FF53CC100D64F5E /* XCProjectFile+Rswift.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "XCProjectFile+Rswift.swift"; path = "../Sources/XCProjectFile+Rswift.swift"; sourceTree = "<group>"; };
 		E2E755AC1FF40C9600177FED /* PBXIdentifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PBXIdentifier.swift; path = ../Sources/PBXIdentifier.swift; sourceTree = "<group>"; };
 		E2FD157B1EACCA7E00772CF1 /* PBXObject+Fields.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "PBXObject+Fields.swift"; path = "../Sources/PBXObject+Fields.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -90,6 +92,7 @@
 				E2FD157B1EACCA7E00772CF1 /* PBXObject+Fields.swift */,
 				E292B9C61B9236D900D75DE2 /* Serialization.swift */,
 				E262D4441B7E21190057CCEE /* XCProjectFile.swift */,
+				E29B539B1FF53CC100D64F5E /* XCProjectFile+Rswift.swift */,
 			);
 			name = XcodeEdit;
 			sourceTree = "<group>";
@@ -152,6 +155,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E29B539C1FF53CC100D64F5E /* XCProjectFile+Rswift.swift in Sources */,
 				E292B9CF1B932F3200D75DE2 /* PBXObject.swift in Sources */,
 				E262D4451B7E21190057CCEE /* XCProjectFile.swift in Sources */,
 				E292B9C71B9236D900D75DE2 /* Serialization.swift in Sources */,

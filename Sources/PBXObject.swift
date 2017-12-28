@@ -214,7 +214,7 @@ public class PBXReference : PBXContainerItem {
     self.path = try fields.optionalString("path")
 
     let sourceTreeString = try fields.string("sourceTree")
-    guard let sourceTree = SourceTree(sourceTreeString: sourceTreeString) else {
+    guard let sourceTree = SourceTree(rawValue: sourceTreeString) else {
       throw AllObjectsError.wrongType(key: sourceTreeString)
     }
     self.sourceTree = sourceTree
@@ -301,13 +301,13 @@ public class XCVersionGroup : PBXReference {
 }
 
 
-public enum SourceTree {
+public enum SourceTree: RawRepresentable {
   case absolute
   case group
   case relativeTo(SourceTreeFolder)
 
-  init?(sourceTreeString: String) {
-    switch sourceTreeString {
+  public init?(rawValue: String) {
+    switch rawValue {
     case "<absolute>":
       self = .absolute
 
@@ -315,8 +315,19 @@ public enum SourceTree {
       self = .group
 
     default:
-      guard let sourceTreeFolder = SourceTreeFolder(rawValue: sourceTreeString) else { return nil }
+      guard let sourceTreeFolder = SourceTreeFolder(rawValue: rawValue) else { return nil }
       self = .relativeTo(sourceTreeFolder)
+    }
+  }
+
+  public var rawValue: String {
+    switch self {
+    case .absolute:
+      return "<absolute>"
+    case .group:
+      return "<group>"
+    case .relativeTo(let folter):
+      return folter.rawValue
     }
   }
 }
