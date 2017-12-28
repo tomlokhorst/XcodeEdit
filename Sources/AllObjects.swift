@@ -111,6 +111,27 @@ public class AllObjects {
     }
   }
 
+  internal func createFreshGuid(from original: Guid) -> Guid {
+    // If original isn't a PBXIdentifier, just return a UUID
+    guard let identifier = PBXIdentifier(string: original.value) else {
+      return Guid(UUID().uuidString)
+    }
+
+    // Ten attempts at generating fresh identifier
+    for _ in 0...10 {
+      let guid = Guid(identifier.createFreshIdentifier().stringValue)
+
+      if objects.keys.contains(guid) {
+        continue
+      }
+
+      return guid
+    }
+
+    // Fallback to UUID
+    return Guid(UUID().uuidString)
+  }
+
   internal static func createObject(_ id: Guid, fields: Fields, allObjects: AllObjects) throws -> PBXObject {
     let isa = try fields.string("isa")
     if let type = types[isa] {

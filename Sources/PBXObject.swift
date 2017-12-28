@@ -170,10 +170,10 @@ public /* abstract */ class PBXTarget : PBXProjectItem {
   }
 
   // Custom function for R.swift
-  public func addBuildPhase(_ reference: Reference<PBXBuildPhase>) {
+  public func insertBuildPhase(_ reference: Reference<PBXBuildPhase>, at index: Int) {
     if _buildPhases.contains(reference) { return }
 
-    _buildPhases.insert(reference, at: 0)
+    _buildPhases.insert(reference, at: index)
     fields["buildPhases"] = _buildPhases.map { $0.id.value }
   }
 }
@@ -278,11 +278,11 @@ public class PBXGroup : PBXReference {
   }
 
   // Custom function for R.swift
-  public func addFileReference(_ fileReference: Reference<PBXFileReference>) {
+  public func insertFileReference(_ fileReference: Reference<PBXFileReference>, at index: Int) {
     if fileRefs.contains(fileReference) { return }
 
     let reference = Reference<PBXReference>(allObjects: fileReference.allObjects, id: fileReference.id)
-    _children.insert(reference, at: 0)
+    _children.insert(reference, at: index)
     fields["children"] = _children.map { $0.id.value }
   }
 }

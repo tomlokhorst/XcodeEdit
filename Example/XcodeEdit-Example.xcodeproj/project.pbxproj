@@ -13,6 +13,7 @@
 		E292B9C71B9236D900D75DE2 /* Serialization.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9C61B9236D900D75DE2 /* Serialization.swift */; };
 		E292B9CE1B932F3200D75DE2 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9CC1B932F3200D75DE2 /* Extensions.swift */; };
 		E292B9CF1B932F3200D75DE2 /* PBXObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = E292B9CD1B932F3200D75DE2 /* PBXObject.swift */; };
+		E2E755AD1FF40C9600177FED /* PBXIdentifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2E755AC1FF40C9600177FED /* PBXIdentifier.swift */; };
 		E2FD157C1EACCA7E00772CF1 /* PBXObject+Fields.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2FD157B1EACCA7E00772CF1 /* PBXObject+Fields.swift */; };
 /* End PBXBuildFile section */
 
@@ -36,6 +37,7 @@
 		E292B9C61B9236D900D75DE2 /* Serialization.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Serialization.swift; path = ../Sources/Serialization.swift; sourceTree = "<group>"; };
 		E292B9CC1B932F3200D75DE2 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Extensions.swift; path = ../Sources/Extensions.swift; sourceTree = "<group>"; };
 		E292B9CD1B932F3200D75DE2 /* PBXObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PBXObject.swift; path = ../Sources/PBXObject.swift; sourceTree = "<group>"; };
+		E2E755AC1FF40C9600177FED /* PBXIdentifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PBXIdentifier.swift; path = ../Sources/PBXIdentifier.swift; sourceTree = "<group>"; };
 		E2FD157B1EACCA7E00772CF1 /* PBXObject+Fields.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "PBXObject+Fields.swift"; path = "../Sources/PBXObject+Fields.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -83,6 +85,7 @@
 			children = (
 				E242AE811E88E3FA00F4CCA5 /* AllObjects.swift */,
 				E292B9CC1B932F3200D75DE2 /* Extensions.swift */,
+				E2E755AC1FF40C9600177FED /* PBXIdentifier.swift */,
 				E292B9CD1B932F3200D75DE2 /* PBXObject.swift */,
 				E2FD157B1EACCA7E00772CF1 /* PBXObject+Fields.swift */,
 				E292B9C61B9236D900D75DE2 /* Serialization.swift */,
@@ -152,6 +155,7 @@
 				E292B9CF1B932F3200D75DE2 /* PBXObject.swift in Sources */,
 				E262D4451B7E21190057CCEE /* XCProjectFile.swift in Sources */,
 				E292B9C71B9236D900D75DE2 /* Serialization.swift in Sources */,
+				E2E755AD1FF40C9600177FED /* PBXIdentifier.swift in Sources */,
 				E22195B21B7C6EDA00F58D3F /* main.swift in Sources */,
 				E2FD157C1EACCA7E00772CF1 /* PBXObject+Fields.swift in Sources */,
 				E242AE821E88E3FA00F4CCA5 /* AllObjects.swift in Sources */,
