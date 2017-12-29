@@ -118,7 +118,7 @@ public class AllObjects {
     }
 
     // Ten attempts at generating fresh identifier
-    for _ in 0...10 {
+    for _ in 0..<10 {
       let guid = Guid(identifier.createFreshIdentifier().stringValue)
 
       if objects.keys.contains(guid) {
