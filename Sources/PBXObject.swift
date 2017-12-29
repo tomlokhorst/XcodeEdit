@@ -51,7 +51,7 @@ public class PBXProject : PBXContainer {
       self.projectReferences = nil
     }
     else {
-      let projectReferenceFields = try fields.fields("projectReferences")
+      let projectReferenceFields = try fields.fieldsArray("projectReferences")
       self.projectReferences = try projectReferenceFields
         .map { try ProjectReference(fields: $0, allObjects: allObjects) }
     }
@@ -139,9 +139,11 @@ public class PBXBuildStyle : PBXProjectItem {
 
 public class XCBuildConfiguration : PBXBuildStyle {
   public let name: String
+  public let buildSettings: [String: Any]
 
   public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
     self.name = try fields.string("name")
+    self.buildSettings = try fields.fields("buildSettings")
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
   }
