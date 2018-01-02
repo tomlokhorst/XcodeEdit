@@ -91,12 +91,24 @@ public class PBXBuildFile : PBXProjectItem {
 
 
 public /* abstract */ class PBXBuildPhase : PBXProjectItem {
-  public let files: [Reference<PBXBuildFile>]
+  private var _files: [Reference<PBXBuildFile>]
 
   public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
-    self.files = allObjects.createReferences(ids: try fields.ids("files"))
+    self._files = allObjects.createReferences(ids: try fields.ids("files"))
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
+
+  public var files: [Reference<PBXBuildFile>] {
+    return _files
+  }
+
+  // Custom function for R.swift
+  public func insertFile(_ reference: Reference<PBXBuildFile>, at index: Int) {
+    if _files.contains(reference) { return }
+
+    _files.insert(reference, at: index)
+    fields["files"] = _files.map { $0.id.value }
   }
 }
 
@@ -346,14 +358,18 @@ public enum SourceTree: RawRepresentable {
   }
 }
 
-public enum SourceTreeFolder: String {
+public enum SourceTreeFolder: String, Equatable {
   case sourceRoot = "SOURCE_ROOT"
   case buildProductsDir = "BUILT_PRODUCTS_DIR"
   case developerDir = "DEVELOPER_DIR"
   case sdkRoot = "SDKROOT"
+
+  public static func ==(lhs: SourceTreeFolder, rhs: SourceTreeFolder) -> Bool {
+    return lhs.rawValue == rhs.rawValue
+  }
 }
 
-public enum Path {
+public enum Path: Equatable {
   case absolute(String)
   case relativeTo(SourceTreeFolder, String)
 
@@ -368,5 +384,16 @@ public enum Path {
     }
   }
 
-}
+  public static func ==(lhs: Path, rhs: Path) -> Bool {
+    switch (lhs, rhs) {
+    case let (.absolute(lpath), .absolute(rpath)):
+      return lpath == rpath
 
+    case let (.relativeTo(lfolder, lpath), .relativeTo(rfolder, rpath)):
+      return lfolder == rfolder && lpath == rpath
+
+    default:
+      return false
+    }
+  }
+}
