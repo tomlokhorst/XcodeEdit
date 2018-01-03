@@ -390,7 +390,10 @@ public enum Path: Equatable {
       return lpath == rpath
 
     case let (.relativeTo(lfolder, lpath), .relativeTo(rfolder, rpath)):
-      return lfolder == rfolder && lpath == rpath
+      let lurl = URL(string: lfolder.rawValue)!.appendingPathComponent(lpath).standardized
+      let rurl = URL(string: rfolder.rawValue)!.appendingPathComponent(rpath).standardized
+
+      return lurl == rurl
 
     default:
       return false
