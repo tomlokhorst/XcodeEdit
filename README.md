@@ -7,7 +7,11 @@ The main goal of this project is to generate `project.pbxproj` files in the lega
 
 Currently, this project is mostly used to support [R.swift](https://github.com/mac-cain13/R.swift).
 
-Note: At this time, there are no APIs for modifying a project file.
+⚠️  Limited support for modificiation
+-----
+
+At this time, there are only limited APIs for modifying a project file.
+Only features that are actually needed by R.swift are implemented. There is no generic way to modify the project strucuture.
 
 
 Usage
