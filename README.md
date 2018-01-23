@@ -31,6 +31,7 @@ try! proj.write(to: xcodeproj, format: PropertyListSerialization.PropertyListFor
 Releases
 --------
 
+ - 2.1.0 - 2018-01-23 - Add some specific modification functions for R.swift
  - **2.0.0** - 2017-12-17 - Support parsing for "broken" project files
  - 1.1.0 - 2017-05-07 - Error types now public
  - **1.0.0** - 2017-03-28 - Rename from Xcode.swift to XcodeEdit
