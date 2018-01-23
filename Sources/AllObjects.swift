@@ -39,7 +39,7 @@ public struct Guid : Hashable, Comparable {
   }
 }
 
-public struct Reference<Value : PBXObject> {
+public struct Reference<Value : PBXObject> : Hashable, Comparable {
   internal let allObjects: AllObjects
 
   public let id: Guid
@@ -53,6 +53,18 @@ public struct Reference<Value : PBXObject> {
     guard let object = allObjects.objects[id] as? Value else { return nil }
 
     return object
+  }
+
+  static public func ==(lhs: Reference<Value>, rhs: Reference<Value>) -> Bool {
+    return lhs.id == rhs.id
+  }
+
+  public var hashValue: Int {
+    return id.hashValue
+  }
+
+  static public func <(lhs: Reference<Value>, rhs: Reference<Value>) -> Bool {
+    return lhs.id < rhs.id
   }
 }
 
@@ -97,6 +109,27 @@ public class AllObjects {
     if count == 1 {
       objects[ref.id] = nil
     }
+  }
+
+  internal func createFreshGuid(from original: Guid) -> Guid {
+    // If original isn't a PBXIdentifier, just return a UUID
+    guard let identifier = PBXIdentifier(string: original.value) else {
+      return Guid(UUID().uuidString)
+    }
+
+    // Ten attempts at generating fresh identifier
+    for _ in 0..<10 {
+      let guid = Guid(identifier.createFreshIdentifier().stringValue)
+
+      if objects.keys.contains(guid) {
+        continue
+      }
+
+      return guid
+    }
+
+    // Fallback to UUID
+    return Guid(UUID().uuidString)
   }
 
   internal static func createObject(_ id: Guid, fields: Fields, allObjects: AllObjects) throws -> PBXObject {

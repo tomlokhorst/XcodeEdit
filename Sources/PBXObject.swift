@@ -8,7 +8,7 @@
 
 import Foundation
 
-public typealias Fields = [String: AnyObject]
+public typealias Fields = [String: Any]
 
 public /* abstract */ class PBXObject {
   internal var fields: Fields
@@ -51,7 +51,7 @@ public class PBXProject : PBXContainer {
       self.projectReferences = nil
     }
     else {
-      let projectReferenceFields = try fields.fields("projectReferences")
+      let projectReferenceFields = try fields.fieldsArray("projectReferences")
       self.projectReferences = try projectReferenceFields
         .map { try ProjectReference(fields: $0, allObjects: allObjects) }
     }
@@ -91,12 +91,24 @@ public class PBXBuildFile : PBXProjectItem {
 
 
 public /* abstract */ class PBXBuildPhase : PBXProjectItem {
-  public let files: [Reference<PBXBuildFile>]
+  private var _files: [Reference<PBXBuildFile>]
 
   public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
-    self.files = allObjects.createReferences(ids: try fields.ids("files"))
+    self._files = allObjects.createReferences(ids: try fields.ids("files"))
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
+
+  public var files: [Reference<PBXBuildFile>] {
+    return _files
+  }
+
+  // Custom function for R.swift
+  public func insertFile(_ reference: Reference<PBXBuildFile>, at index: Int) {
+    if _files.contains(reference) { return }
+
+    _files.insert(reference, at: index)
+    fields["files"] = _files.map { $0.id.value }
   }
 }
 
@@ -139,29 +151,44 @@ public class PBXBuildStyle : PBXProjectItem {
 
 public class XCBuildConfiguration : PBXBuildStyle {
   public let name: String
+  public let buildSettings: [String: Any]
 
   public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
     self.name = try fields.string("name")
+    self.buildSettings = try fields.fields("buildSettings")
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
   }
 }
 
 public /* abstract */ class PBXTarget : PBXProjectItem {
+
   public let buildConfigurationList: Reference<XCConfigurationList>
   public let name: String
   public let productName: String
-  public let buildPhases: [Reference<PBXBuildPhase>]
+  private var _buildPhases: [Reference<PBXBuildPhase>]
   public let dependencies: [Reference<PBXTargetDependency>]
 
   public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
     self.buildConfigurationList = allObjects.createReference(id: try fields.id("buildConfigurationList"))
     self.name = try fields.string("name")
     self.productName = try fields.string("productName")
-    self.buildPhases = allObjects.createReferences(ids: try fields.ids("buildPhases"))
+    self._buildPhases = allObjects.createReferences(ids: try fields.ids("buildPhases"))
     self.dependencies = allObjects.createReferences(ids: try fields.ids("dependencies"))
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
+
+  public var buildPhases: [Reference<PBXBuildPhase>] {
+    return _buildPhases
+  }
+
+  // Custom function for R.swift
+  public func insertBuildPhase(_ reference: Reference<PBXBuildPhase>, at index: Int) {
+    if _buildPhases.contains(reference) { return }
+
+    _buildPhases.insert(reference, at: index)
+    fields["buildPhases"] = _buildPhases.map { $0.id.value }
   }
 }
 
@@ -183,11 +210,23 @@ public class PBXTargetDependency : PBXProjectItem {
 
 public class XCConfigurationList : PBXProjectItem {
   public let buildConfigurations: [Reference<XCBuildConfiguration>]
+  public let defaultConfigurationName: String
 
   public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
     self.buildConfigurations = allObjects.createReferences(ids: try fields.ids("buildConfigurations"))
+    self.defaultConfigurationName = try fields.string("defaultConfigurationName")
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
+
+  public var defaultConfiguration: XCBuildConfiguration? {
+    for configuration in buildConfigurations {
+      if let configuration = configuration.value, configuration.name == defaultConfigurationName {
+        return configuration
+      }
+    }
+
+    return nil
   }
 }
 
@@ -201,7 +240,7 @@ public class PBXReference : PBXContainerItem {
     self.path = try fields.optionalString("path")
 
     let sourceTreeString = try fields.string("sourceTree")
-    guard let sourceTree = SourceTree(sourceTreeString: sourceTreeString) else {
+    guard let sourceTree = SourceTree(rawValue: sourceTreeString) else {
       throw AllObjectsError.wrongType(key: sourceTreeString)
     }
     self.sourceTree = sourceTree
@@ -238,29 +277,39 @@ public class PBXReferenceProxy : PBXReference {
 }
 
 public class PBXGroup : PBXReference {
-  public let children: [Reference<PBXReference>]
+  private var _children: [Reference<PBXReference>]
 
-  // convenience accessors
+  public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
+    self._children = allObjects.createReferences(ids: try fields.ids("children"))
+
+    try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
+
+  public var children: [Reference<PBXReference>] {
+    return _children
+  }
+
   public var subGroups: [Reference<PBXGroup>] {
-    return self.children.flatMap { childRef in
+    return _children.flatMap { childRef in
       guard let _ = childRef.value as? PBXGroup else { return nil }
-
       return Reference(allObjects: childRef.allObjects, id: childRef.id)
     }
   }
 
   public var fileRefs: [Reference<PBXFileReference>] {
-    return self.children.flatMap { childRef in
+    return _children.flatMap { childRef in
       guard let _ = childRef.value as? PBXFileReference else { return nil }
-
       return Reference(allObjects: childRef.allObjects, id: childRef.id)
     }
   }
 
-  public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
-    self.children = allObjects.createReferences(ids: try fields.ids("children"))
+  // Custom function for R.swift
+  public func insertFileReference(_ fileReference: Reference<PBXFileReference>, at index: Int) {
+    if fileRefs.contains(fileReference) { return }
 
-    try super.init(id: id, fields: fields, allObjects: allObjects)
+    let reference = Reference<PBXReference>(allObjects: fileReference.allObjects, id: fileReference.id)
+    _children.insert(reference, at: index)
+    fields["children"] = _children.map { $0.id.value }
   }
 }
 
@@ -278,13 +327,13 @@ public class XCVersionGroup : PBXReference {
 }
 
 
-public enum SourceTree {
+public enum SourceTree: RawRepresentable {
   case absolute
   case group
   case relativeTo(SourceTreeFolder)
 
-  init?(sourceTreeString: String) {
-    switch sourceTreeString {
+  public init?(rawValue: String) {
+    switch rawValue {
     case "<absolute>":
       self = .absolute
 
@@ -292,20 +341,35 @@ public enum SourceTree {
       self = .group
 
     default:
-      guard let sourceTreeFolder = SourceTreeFolder(rawValue: sourceTreeString) else { return nil }
+      guard let sourceTreeFolder = SourceTreeFolder(rawValue: rawValue) else { return nil }
       self = .relativeTo(sourceTreeFolder)
+    }
+  }
+
+  public var rawValue: String {
+    switch self {
+    case .absolute:
+      return "<absolute>"
+    case .group:
+      return "<group>"
+    case .relativeTo(let folter):
+      return folter.rawValue
     }
   }
 }
 
-public enum SourceTreeFolder: String {
+public enum SourceTreeFolder: String, Equatable {
   case sourceRoot = "SOURCE_ROOT"
   case buildProductsDir = "BUILT_PRODUCTS_DIR"
   case developerDir = "DEVELOPER_DIR"
   case sdkRoot = "SDKROOT"
+
+  public static func ==(lhs: SourceTreeFolder, rhs: SourceTreeFolder) -> Bool {
+    return lhs.rawValue == rhs.rawValue
+  }
 }
 
-public enum Path {
+public enum Path: Equatable {
   case absolute(String)
   case relativeTo(SourceTreeFolder, String)
 
@@ -320,5 +384,19 @@ public enum Path {
     }
   }
 
-}
+  public static func ==(lhs: Path, rhs: Path) -> Bool {
+    switch (lhs, rhs) {
+    case let (.absolute(lpath), .absolute(rpath)):
+      return lpath == rpath
 
+    case let (.relativeTo(lfolder, lpath), .relativeTo(rfolder, rpath)):
+      let lurl = URL(string: lfolder.rawValue)!.appendingPathComponent(lpath).standardized
+      let rurl = URL(string: rfolder.rawValue)!.appendingPathComponent(rpath).standardized
+
+      return lurl == rurl
+
+    default:
+      return false
+    }
+  }
+}
