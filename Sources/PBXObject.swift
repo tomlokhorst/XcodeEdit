@@ -210,11 +210,11 @@ public class PBXTargetDependency : PBXProjectItem {
 
 public class XCConfigurationList : PBXProjectItem {
   public let buildConfigurations: [Reference<XCBuildConfiguration>]
-  public let defaultConfigurationName: String
+  public let defaultConfigurationName: String?
 
   public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
     self.buildConfigurations = allObjects.createReferences(ids: try fields.ids("buildConfigurations"))
-    self.defaultConfigurationName = try fields.string("defaultConfigurationName")
+    self.defaultConfigurationName = try fields.optionalString("defaultConfigurationName")
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
   }
