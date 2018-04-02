@@ -48,7 +48,7 @@ print("Timeinterval: \(time)")
 //}
 
 // Print shells
-for target in proj.project.targets.flatMap({ $0.value }) {
+for target in proj.project.targets.compactMap({ $0.value }) {
 
   print("Target \(target.name) - \(target.isa): \(target.buildPhases.count)")
   for bc in target.buildConfigurationList.value!.buildConfigurations.map({ $0.value! }) {

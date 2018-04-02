@@ -118,7 +118,7 @@ public class XCProjectFile {
 
     var ps: [Guid: Path] = [:]
 
-    let fileRefs = current.fileRefs.flatMap { $0.value }
+    let fileRefs = current.fileRefs.compactMap { $0.value }
     for file in fileRefs {
       guard let path = file.path else { continue }
 
@@ -143,7 +143,7 @@ public class XCProjectFile {
       }
     }
 
-    let subGroups = current.subGroups.flatMap { $0.value }
+    let subGroups = current.subGroups.compactMap { $0.value }
     for group in subGroups {
       if let path = group.path {
         

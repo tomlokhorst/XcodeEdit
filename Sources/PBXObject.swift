@@ -290,14 +290,14 @@ public class PBXGroup : PBXReference {
   }
 
   public var subGroups: [Reference<PBXGroup>] {
-    return _children.flatMap { childRef in
+    return _children.compactMap { childRef in
       guard let _ = childRef.value as? PBXGroup else { return nil }
       return Reference(allObjects: childRef.allObjects, id: childRef.id)
     }
   }
 
   public var fileRefs: [Reference<PBXFileReference>] {
-    return _children.flatMap { childRef in
+    return _children.compactMap { childRef in
       guard let _ = childRef.value as? PBXFileReference else { return nil }
       return Reference(allObjects: childRef.allObjects, id: childRef.id)
     }
