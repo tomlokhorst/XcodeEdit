@@ -237,6 +237,7 @@ private let types: [String: PBXObject.Type] = [
   "PBXBuildStyle": PBXBuildStyle.self,
   "XCBuildConfiguration": XCBuildConfiguration.self,
   "PBXAggregateTarget": PBXAggregateTarget.self,
+  "PBXLegacyTarget": PBXLegacyTarget.self,
   "PBXNativeTarget": PBXNativeTarget.self,
   "PBXTargetDependency": PBXTargetDependency.self,
   "XCConfigurationList": XCConfigurationList.self,

@@ -61,8 +61,8 @@ internal class Serializer {
     self.projectFile = projectFile
   }
 
-  lazy var targetsByConfigId: [Guid: PBXNativeTarget] = {
-    var dict: [Guid: PBXNativeTarget] = [:]
+  lazy var targetsByConfigId: [Guid: PBXTarget] = {
+    var dict: [Guid: PBXTarget] = [:]
     for reference in self.projectFile.project.targets {
       if let target = reference.value {
         dict[target.buildConfigurationList.id] = target

@@ -35,7 +35,7 @@ public class PBXProject : PBXContainer {
   public let hasScannedForEncodings: Bool
   public let knownRegions: [String]
   public let mainGroup: Reference<PBXGroup>
-  public let targets: [Reference<PBXNativeTarget>]
+  public let targets: [Reference<PBXTarget>]
   public let projectReferences: [ProjectReference]?
 
   public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
@@ -193,6 +193,9 @@ public /* abstract */ class PBXTarget : PBXProjectItem {
 }
 
 public class PBXAggregateTarget : PBXTarget {
+}
+
+public class PBXLegacyTarget : PBXTarget {
 }
 
 public class PBXNativeTarget : PBXTarget {
