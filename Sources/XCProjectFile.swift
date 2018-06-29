@@ -167,6 +167,9 @@ public class XCProjectFile {
 
         case .relativeTo(.sdkRoot):
           str = path
+
+        case .relativeTo(.platformDir):
+          str = path
         }
 
         ps += paths(group, prefix: str)
