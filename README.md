@@ -31,6 +31,7 @@ try! proj.write(to: xcodeproj, format: PropertyListSerialization.PropertyListFor
 Releases
 --------
 
+ - 2.4.0 - 2018-07-03 - Add support for SourceTreeFolder type `PLATFORM_DIR`
  - 2.3.0 - 2018-06-17 - Add support for PBXLegacyTarget
  - 2.2.0 - 2018-04-04 - Swift 4.1 support
  - 2.1.0 - 2018-01-23 - Add some specific modification functions for R.swift
