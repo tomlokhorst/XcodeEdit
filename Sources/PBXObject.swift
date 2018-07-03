@@ -366,6 +366,7 @@ public enum SourceTreeFolder: String, Equatable {
   case buildProductsDir = "BUILT_PRODUCTS_DIR"
   case developerDir = "DEVELOPER_DIR"
   case sdkRoot = "SDKROOT"
+  case platformDir = "PLATFORM_DIR"
 
   public static func ==(lhs: SourceTreeFolder, rhs: SourceTreeFolder) -> Bool {
     return lhs.rawValue == rhs.rawValue
