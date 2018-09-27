@@ -88,7 +88,8 @@
 				E2198F4C1E87F5D20060E645 /* XCProjectFile.swift */,
 				E29B539D1FF5423800D64F5E /* XCProjectFile+Rswift.swift */,
 			);
-			path = Sources;
+			name = Sources;
+			path = Sources/XcodeEdit;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
