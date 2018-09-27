@@ -43,13 +43,6 @@ extension XCProjectFile {
 }
 
 private let nonescapeRegex = try! NSRegularExpression(pattern: "^[a-z0-9_\\$\\.\\/]+$", options: NSRegularExpression.Options.caseInsensitive)
-private let specialRegexes = [
-  "\\\\": try! NSRegularExpression(pattern: "\\\\", options: []),
-  "\\\"": try! NSRegularExpression(pattern: "\"", options: []),
-  "\\n": try! NSRegularExpression(pattern: "\\n", options: []),
-  "\\r": try! NSRegularExpression(pattern: "\\r", options: []),
-  "\\t": try! NSRegularExpression(pattern: "\\t", options: []),
-]
 
 internal class Serializer {
 
@@ -207,11 +200,16 @@ internal class Serializer {
 
   func valStr(_ val: String) -> String {
 
-    var str = val
-    for (replacement, regex) in specialRegexes {
-      let range = NSRange(location: 0, length: str.utf16.count)
-      let template = NSRegularExpression.escapedTemplate(for: replacement)
-      str = regex.stringByReplacingMatches(in: str, options: [], range: range, withTemplate: template)
+    let replacements: [(String, String)] = [
+      ("\\", "\\\\"),
+      ("\t", "\\t"),
+      ("\n", "\\n"),
+      ("\r", "\\r"),
+      ("\"", "\\\"")
+    ]
+    
+    let str = replacements.reduce(val) { (acc, replacement) in
+      return acc.replacingOccurrences(of: replacement.0, with: replacement.1)
     }
 
     let range = NSRange(location: 0, length: str.utf16.count)
