@@ -207,9 +207,10 @@ internal class Serializer {
       ("\r", "\\r"),
       ("\"", "\\\"")
     ]
-    
-    let str = replacements.reduce(val) { (acc, replacement) in
-      return acc.replacingOccurrences(of: replacement.0, with: replacement.1)
+
+    var str = val
+    for (template, replacement) in replacements {
+      str = str.replacingOccurrences(of: template, with: replacement)
     }
 
     let range = NSRange(location: 0, length: str.utf16.count)
