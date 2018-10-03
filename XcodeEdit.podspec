@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "XcodeEdit"
-  s.version      = "2.4.0"
+  s.version      = "2.4.2"
   s.license      = "MIT"
 
   s.summary      = "Reading and writing the Xcode pbxproj file format, from Swift!"
@@ -17,6 +17,7 @@ The main goal of this project is to generate project.pbxproj files in the legacy
   s.osx.deployment_target = '10.10'
 
   s.source          = { :git => "https://github.com/tomlokhorst/XcodeEdit.git", :tag => s.version }
-  s.source_files    = "Sources"
+  s.source_files    = "Sources/XcodeEdit"
+  s.swift_version   = '4.2'
 
 end
