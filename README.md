@@ -31,6 +31,7 @@ try! proj.write(to: xcodeproj, format: PropertyListSerialization.PropertyListFor
 Releases
 --------
 
+ - 2.5.0 - 2018-12-11 - Improve serialization for escaped identifiers in pbxproj
  - 2.4.2 - 2018-10-03 - Fix escaped strings in serializer
  - 2.4.0 - 2018-07-03 - Add support for SourceTreeFolder type `PLATFORM_DIR`
  - 2.3.0 - 2018-06-17 - Add support for PBXLegacyTarget
