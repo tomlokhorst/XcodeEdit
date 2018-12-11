@@ -344,12 +344,13 @@ internal class Serializer {
       }
     }
 
+    let keyStr = valStr(objectId.value)
     var objComment = ""
     if let c = comment(id: objectId) {
       objComment = " /* \(c) */"
     }
 
-    let opening = "\(objectId.value)\(objComment) = {"
+    let opening = "\(keyStr)\(objComment) = {"
     let closing = "};"
 
     if multiline {
