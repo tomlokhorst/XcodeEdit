@@ -306,7 +306,7 @@ internal class Serializer {
       let str = valStr("\(val)")
 
       var extraComment = "";
-      if let c = comment(id: Guid(str)) {
+      if let c = comment(id: Guid("\(val)")) {
         extraComment = " /* \(c) */"
       }
 
