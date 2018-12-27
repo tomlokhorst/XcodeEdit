@@ -129,7 +129,12 @@ public class XCProjectFile {
           ps[file.id] = .absolute(prefix + "/" + path)
 
         case .group:
-          ps[file.id] = .relativeTo(.sourceRoot, prefix + "/" + path)
+          if prefix.hasPrefix("/") {
+            ps[file.id] = .absolute(prefix + "/" + path)
+          }
+          else {
+            ps[file.id] = .relativeTo(.sourceRoot, prefix + "/" + path)
+          }
 
         case .relativeTo(let sourceTreeFolder):
           ps[file.id] = .relativeTo(sourceTreeFolder, prefix + "/" + path)
