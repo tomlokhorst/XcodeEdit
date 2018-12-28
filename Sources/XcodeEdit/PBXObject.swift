@@ -384,7 +384,7 @@ public enum Path: Equatable {
 
     case let .relativeTo(sourceTreeFolder, relativePath):
       let sourceTreeURL = urlForSourceTreeFolder(sourceTreeFolder)
-      return sourceTreeURL.appendingPathComponent(relativePath).standardizedFileURL
+      return URL(string: relativePath, relativeTo: sourceTreeURL)!.standardizedFileURL
     }
   }
 
