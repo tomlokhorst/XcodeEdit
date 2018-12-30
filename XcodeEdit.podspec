@@ -14,7 +14,7 @@ The main goal of this project is to generate project.pbxproj files in the legacy
   s.homepage          = "https://github.com/tomlokhorst/XcodeEdit"
 
   s.ios.deployment_target = '9.0'
-  s.osx.deployment_target = '10.10'
+  s.osx.deployment_target = '10.11'
 
   s.source          = { :git => "https://github.com/tomlokhorst/XcodeEdit.git", :tag => s.version }
   s.source_files    = "Sources/XcodeEdit"

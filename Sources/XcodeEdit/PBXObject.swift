@@ -165,14 +165,14 @@ public /* abstract */ class PBXTarget : PBXProjectItem {
 
   public let buildConfigurationList: Reference<XCConfigurationList>
   public let name: String
-  public let productName: String
+  public let productName: String?
   private var _buildPhases: [Reference<PBXBuildPhase>]
   public let dependencies: [Reference<PBXTargetDependency>]
 
   public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
     self.buildConfigurationList = allObjects.createReference(id: try fields.id("buildConfigurationList"))
     self.name = try fields.string("name")
-    self.productName = try fields.string("productName")
+    self.productName = try fields.optionalString("productName")
     self._buildPhases = allObjects.createReferences(ids: try fields.ids("buildPhases"))
     self.dependencies = allObjects.createReferences(ids: try fields.ids("dependencies"))
 
@@ -377,6 +377,7 @@ public enum Path: Equatable {
   case absolute(String)
   case relativeTo(SourceTreeFolder, String)
 
+  @available(OSX 10.11, *)
   public func url(with urlForSourceTreeFolder: (SourceTreeFolder) -> URL) -> URL {
     switch self {
     case let .absolute(absolutePath):
@@ -384,7 +385,7 @@ public enum Path: Equatable {
 
     case let .relativeTo(sourceTreeFolder, relativePath):
       let sourceTreeURL = urlForSourceTreeFolder(sourceTreeFolder)
-      return URL(string: relativePath, relativeTo: sourceTreeURL)!.standardizedFileURL
+      return URL(fileURLWithPath: relativePath, relativeTo: sourceTreeURL).standardizedFileURL
     }
   }
 

@@ -126,13 +126,13 @@ public class XCProjectFile {
       case .group:
         switch current.sourceTree {
         case .absolute:
-          ps[file.id] = .absolute(prefix + "/" + path)
+          ps[file.id] = .absolute(prefix + path)
 
         case .group:
-          ps[file.id] = .relativeTo(.sourceRoot, prefix + "/" + path)
+          ps[file.id] = .relativeTo(.sourceRoot, prefix + path)
 
         case .relativeTo(let sourceTreeFolder):
-          ps[file.id] = .relativeTo(sourceTreeFolder, prefix + "/" + path)
+          ps[file.id] = .relativeTo(sourceTreeFolder, prefix + path)
         }
 
       case .absolute:
@@ -154,7 +154,7 @@ public class XCProjectFile {
           str = path
 
         case .group:
-          str = prefix + "/" + path
+          str = prefix + path
 
         case .relativeTo(.sourceRoot):
           str = path
@@ -172,7 +172,7 @@ public class XCProjectFile {
           str = path
         }
 
-        ps += paths(group, prefix: str)
+        ps += paths(group, prefix: str + "/")
       }
       else {
         ps += paths(group, prefix: prefix)
