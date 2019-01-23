@@ -152,9 +152,10 @@ public class AllObjects {
     let orphanObjs = objKeys.subtracting(refKeys).sorted()
 
     var errors: [ReferenceError] = []
-    for (id, object) in objects {
 
+    for (id, object) in objects {
       for (path, guid) in findGuids(object) {
+
         if !objKeys.contains(guid) {
           let error = ReferenceError.deadReference(type: object.isa, id: id, keyPath: path, ref: guid)
           errors.append(error)
@@ -170,6 +171,9 @@ public class AllObjects {
     }
 
     if !deadRefs.isEmpty || !orphanObjs.isEmpty {
+      if deadRefs.count + orphanObjs.count != errors.count {
+        assertionFailure("Error count doesn't equal dead ref count + orphan object count")
+      }
       throw ProjectFileError.internalInconsistency(errors)
     }
   }
@@ -184,37 +188,41 @@ private func referenceGuid(_ obj: Any) -> Guid? {
   return m.descendant("id") as? Guid
 }
 
-
-private func findGuids(_ obj: Any) -> [(String, Guid)] {
+private func findGuids(_ obj: Any, parentPath: String? = nil) -> [(String, Guid)] {
 
   var result: [(String, Guid)] = []
 
-  for child in Mirror(reflecting: obj).children {
+  var objMirror: Mirror? = Mirror(reflecting: obj)
+  while let mirror = objMirror {
+    defer { objMirror = objMirror?.superclassMirror }
 
-    guard let label = child.label else { continue }
-    let value = child.value
+    for child in mirror.children {
 
-    let m = Mirror(reflecting: value)
-    if m.displayStyle == Mirror.DisplayStyle.`struct` {
-      if let guid = referenceGuid(value) {
-        result.append((label, guid))
-      }
-    }
-    if m.displayStyle == Mirror.DisplayStyle.optional
-      || m.displayStyle == Mirror.DisplayStyle.collection
-    {
-      for item in m.children {
-        if let guid = referenceGuid(item.value) {
-          result.append((label, guid))
+      guard let label = child.label else { continue }
+      let path = parentPath.map { "\($0).\(label)" } ?? label
+      let value = child.value
+
+      let m = Mirror(reflecting: value)
+      if m.displayStyle == Mirror.DisplayStyle.`struct` {
+        if let guid = referenceGuid(value) {
+          result.append((path, guid))
         }
       }
-    }
-    if m.displayStyle == Mirror.DisplayStyle.optional {
-      if let element = m.children.first {
-        for item in Mirror(reflecting: element.value).children {
-          let vals = findGuids(item.value)
-            .map { arg in ("\(label).\(arg.0)", arg.1) }
-          result.append(contentsOf: vals)
+      if m.displayStyle == Mirror.DisplayStyle.optional
+        || m.displayStyle == Mirror.DisplayStyle.collection
+      {
+        for item in m.children {
+          if let guid = referenceGuid(item.value) {
+            result.append((path, guid))
+          }
+        }
+      }
+      if m.displayStyle == Mirror.DisplayStyle.optional {
+        if let element = m.children.first {
+          for item in Mirror(reflecting: element.value).children {
+            let vals = findGuids(item.value, parentPath: path)
+            result.append(contentsOf: vals)
+          }
         }
       }
     }
