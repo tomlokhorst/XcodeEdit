@@ -31,7 +31,7 @@ try! proj.write(to: xcodeproj, format: PropertyListSerialization.PropertyListFor
 Releases
 --------
 
- - 2.5.3 - 2019-01-23 - Improved error messages for broken project files
+ - 2.6.0 - 2019-01-23 - Improved error messages for broken project files
  - 2.5.2 - 2018-12-30 - Fixes incorrect generation of relative URLs, again
  - 2.5.1 - 2018-12-28 - Fixes incorrect generation of relative URLs
  - 2.5.0 - 2018-12-11 - Improve serialization for escaped identifiers in pbxproj
