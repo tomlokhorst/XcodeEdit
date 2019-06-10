@@ -3,6 +3,9 @@ import PackageDescription
 
 let package = Package(
   name: "XcodeEdit",
+  platforms: [
+    .macOS(.v10_10)
+  ],
   products: [
     .library(name: "XcodeEdit", targets: ["XcodeEdit"]),
   ],
