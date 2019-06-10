@@ -26,14 +26,6 @@ public struct Guid : Hashable, Comparable {
     self.value = value
   }
 
-  static public func ==(lhs: Guid, rhs: Guid) -> Bool {
-    return lhs.value == rhs.value
-  }
-
-  public func hash(into hasher: inout Hasher) {
-    hasher.combine(value)
-  }
-
   static public func <(lhs: Guid, rhs: Guid) -> Bool {
     return lhs.value < rhs.value
   }
