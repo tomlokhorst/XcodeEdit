@@ -30,9 +30,15 @@ public struct Guid : Hashable, Comparable {
     return lhs.value == rhs.value
   }
 
+  #if swift(<4.2)
   public var hashValue: Int {
     return value.hashValue
   }
+  #else
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(value)
+  }
+  #endif
 
   static public func <(lhs: Guid, rhs: Guid) -> Bool {
     return lhs.value < rhs.value
@@ -59,9 +65,15 @@ public struct Reference<Value : PBXObject> : Hashable, Comparable {
     return lhs.id == rhs.id
   }
 
+  #if swift(<4.2)
   public var hashValue: Int {
     return id.hashValue
   }
+  #else
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(id.value)
+  }
+  #endif
 
   static public func <(lhs: Reference<Value>, rhs: Reference<Value>) -> Bool {
     return lhs.id < rhs.id
