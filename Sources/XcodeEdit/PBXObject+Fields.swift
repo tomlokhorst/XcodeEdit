@@ -85,6 +85,20 @@ internal extension Dictionary where Key == String {
     return value
   }
 
+  func optionalURL(_ key: String) throws -> URL? {
+    guard let val = self[key] else {
+      return nil
+    }
+    guard let value = val as? String else {
+      throw AllObjectsError.wrongType(key: key)
+    }
+    guard let url = URL(string: value) else {
+      throw AllObjectsError.wrongType(key: key)
+    }
+
+    return url
+  }
+
   func string(_ key: String) throws -> String {
     guard let val = self[key] else {
       throw AllObjectsError.fieldMissing(key: key)

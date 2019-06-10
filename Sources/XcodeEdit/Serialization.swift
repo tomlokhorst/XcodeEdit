@@ -156,6 +156,15 @@ internal class Serializer {
       if let copyFiles = obj as? PBXCopyFilesBuildPhase {
         return copyFiles.name ?? "CopyFiles"
       }
+      if let dependency = obj as? XCSwiftPackageProductDependency {
+        return dependency.productName
+      }
+      if let reference = obj as? XCRemoteSwiftPackageReference {
+        if let repositoryName = reference.repositoryURL?.deletingPathExtension().lastPathComponent {
+          return "XCRemoteSwiftPackageReference \"\(repositoryName)\""
+        }
+        return "XCRemoteSwiftPackageReference"
+      }
       if obj is PBXFrameworksBuildPhase {
         return "Frameworks"
       }
@@ -178,6 +187,11 @@ internal class Serializer {
           if let fileRefId = buildFile.fileRef?.id {
             if let fileRef = comment(id: fileRefId) {
               return "\(fileRef) in \(group)"
+            }
+          }
+          else if let productRefId = buildFile.productRef?.id {
+            if let productRef = comment(id: productRefId) {
+              return "\(productRef) in \(group)"
             }
           }
           else {

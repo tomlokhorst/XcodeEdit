@@ -81,9 +81,11 @@ public /* abstract */ class PBXProjectItem : PBXContainerItem {
 
 public class PBXBuildFile : PBXProjectItem {
   public let fileRef: Reference<PBXReference>?
+  public let productRef: Reference<XCSwiftPackageProductDependency>?
 
   public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
     self.fileRef = allObjects.createOptionalReference(id: try fields.optionalId("fileRef"))
+    self.productRef = allObjects.createOptionalReference(id: try fields.optionalId("productRef"))
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
   }
@@ -168,6 +170,7 @@ public /* abstract */ class PBXTarget : PBXProjectItem {
   public let productName: String?
   private var _buildPhases: [Reference<PBXBuildPhase>]
   public let dependencies: [Reference<PBXTargetDependency>]
+  public let packageProductDependencies: [Reference<XCSwiftPackageProductDependency>]?
 
   public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
     self.buildConfigurationList = allObjects.createReference(id: try fields.id("buildConfigurationList"))
@@ -175,6 +178,13 @@ public /* abstract */ class PBXTarget : PBXProjectItem {
     self.productName = try fields.optionalString("productName")
     self._buildPhases = allObjects.createReferences(ids: try fields.ids("buildPhases"))
     self.dependencies = allObjects.createReferences(ids: try fields.ids("dependencies"))
+
+    if fields["packageProductDependencies"] == nil {
+      self.packageProductDependencies = nil
+    }
+    else {
+      self.packageProductDependencies = allObjects.createReferences(ids: try fields.ids("packageProductDependencies"))
+    }
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
   }
@@ -206,6 +216,31 @@ public class PBXTargetDependency : PBXProjectItem {
 
   public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
     self.targetProxy = allObjects.createReference(id: try fields.id("targetProxy"))
+
+    try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
+}
+
+// Note: Not sure if ProjectItem is correct superclass
+public class XCSwiftPackageProductDependency : PBXProjectItem {
+
+  public let productName: String?
+  public let package: Reference<XCRemoteSwiftPackageReference>
+
+  public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
+    self.productName = try fields.optionalString("productName")
+    self.package = allObjects.createReference(id: try fields.id("package"))
+
+    try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
+}
+
+// Note: Not sure if ProjectItem is correct superclass
+public class XCRemoteSwiftPackageReference : PBXProjectItem {
+  public let repositoryURL: URL?
+
+  public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
+    self.repositoryURL = try fields.optionalURL("repositoryURL")
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
   }
