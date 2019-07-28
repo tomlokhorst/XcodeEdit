@@ -33,7 +33,7 @@ public class PBXProject : PBXContainer {
   public let buildConfigurationList: Reference<XCConfigurationList>
   public let developmentRegion: String
   public let hasScannedForEncodings: Bool
-  public let knownRegions: [String]
+  public let knownRegions: [String]?
   public let mainGroup: Reference<PBXGroup>
   public let targets: [Reference<PBXTarget>]
   public let projectReferences: [ProjectReference]?
@@ -41,7 +41,11 @@ public class PBXProject : PBXContainer {
   public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
     self.developmentRegion = try fields.string("developmentRegion")
     self.hasScannedForEncodings = try fields.bool("hasScannedForEncodings")
-    self.knownRegions = try fields.strings("knownRegions")
+    if fields["knownRegions"] == nil {
+      self.knownRegions = nil
+    } else {
+      self.knownRegions = try fields.strings("knownRegions")
+    }
 
     self.buildConfigurationList = allObjects.createReference(id: try fields.id("buildConfigurationList"))
     self.mainGroup = allObjects.createReference(id: try fields.id("mainGroup"))

@@ -60,7 +60,7 @@ public struct PBXIdentifier {
   public func createFreshIdentifier() -> PBXIdentifier {
     var result = self
     result._time = UInt32(Date.timeIntervalSinceReferenceDate)
-    result._random = UInt16(arc4random_uniform(UInt32(UInt16.max)))
+    result._random = UInt16.random(in: 0..<UInt16.max)
 
     return result
   }
