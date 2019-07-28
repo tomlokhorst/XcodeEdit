@@ -31,6 +31,7 @@ try! proj.write(to: xcodeproj, format: PropertyListSerialization.PropertyListFor
 Releases
 --------
 
+ - 2.7.2 - 2019-07-28 - Improved suport for SPM
  - 2.7.0 - 2019-06-10 - Add suport for Xcode 13 SPM objects
  - 2.6.0 - 2019-01-23 - Improved error messages for broken project files
  - 2.5.2 - 2018-12-30 - Fixes incorrect generation of relative URLs, again
