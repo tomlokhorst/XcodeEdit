@@ -31,17 +31,21 @@ public /* abstract */ class PBXContainer : PBXObject {
 
 public class PBXProject : PBXContainer {
   public let buildConfigurationList: Reference<XCConfigurationList>
+  public let attributes: Fields?
   public let developmentRegion: String
   public let hasScannedForEncodings: Bool
   public let knownRegions: [String]?
+  public let knownAssetTags: [String]?
   public let mainGroup: Reference<PBXGroup>
   public let targets: [Reference<PBXTarget>]
   public let projectReferences: [ProjectReference]?
 
   public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
+    self.attributes = try fields.optionalFields("attributes")
     self.developmentRegion = try fields.string("developmentRegion")
     self.hasScannedForEncodings = try fields.bool("hasScannedForEncodings")
     self.knownRegions = try fields.optionalStrings("knownRegions")
+    self.knownAssetTags = try attributes?.strings("KnownAssetTags")
     self.buildConfigurationList = allObjects.createReference(id: try fields.id("buildConfigurationList"))
     self.mainGroup = allObjects.createReference(id: try fields.id("mainGroup"))
     self.targets = allObjects.createReferences(ids: try fields.ids("targets"))
