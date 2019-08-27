@@ -54,6 +54,17 @@ internal extension Dictionary where Key == String {
     return value.map(Guid.init)
   }
 
+  func optionalIds(_ key: String) throws -> [Guid]? {
+    guard let val = self[key] else {
+      return nil
+    }
+    guard let value = val as? [String] else {
+      throw AllObjectsError.wrongType(key: key)
+    }
+
+    return value.map(Guid.init)
+  }
+
   func bool(_ key: String) throws -> Bool {
     guard let val = self[key] else {
       throw AllObjectsError.fieldMissing(key: key)
@@ -72,17 +83,6 @@ internal extension Dictionary where Key == String {
     default:
       throw AllObjectsError.wrongType(key: key)
     }
-  }
-
-  func optionalString(_ key: String) throws -> String? {
-    guard let val = self[key] else {
-      return nil
-    }
-    guard let value = val as? String else {
-      throw AllObjectsError.wrongType(key: key)
-    }
-
-    return value
   }
 
   func optionalURL(_ key: String) throws -> URL? {
@@ -110,9 +110,31 @@ internal extension Dictionary where Key == String {
     return value
   }
 
+  func optionalString(_ key: String) throws -> String? {
+    guard let val = self[key] else {
+      return nil
+    }
+    guard let value = val as? String else {
+      throw AllObjectsError.wrongType(key: key)
+    }
+
+    return value
+  }
+
   func strings(_ key: String) throws -> [String] {
     guard let val = self[key] else {
       throw AllObjectsError.fieldMissing(key: key)
+    }
+    guard let value = val as? [String] else {
+      throw AllObjectsError.wrongType(key: key)
+    }
+
+    return value
+  }
+
+  func optionalStrings(_ key: String) throws -> [String]? {
+    guard let val = self[key] else {
+      return nil
     }
     guard let value = val as? [String] else {
       throw AllObjectsError.wrongType(key: key)
@@ -132,9 +154,31 @@ internal extension Dictionary where Key == String {
     return value
   }
 
+  func optionalFields(_ key: String) throws -> Fields? {
+    guard let val = self[key] else {
+      return nil
+    }
+    guard let value = val as? Fields else {
+      throw AllObjectsError.wrongType(key: key)
+    }
+
+    return value
+  }
+
   func fieldsArray(_ key: String) throws -> [Fields] {
     guard let val = self[key] else {
       throw AllObjectsError.fieldMissing(key: key)
+    }
+    guard let value = val as? [Fields] else {
+      throw AllObjectsError.wrongType(key: key)
+    }
+
+    return value
+  }
+
+  func optionalFieldsArray(_ key: String) throws -> [Fields]? {
+    guard let val = self[key] else {
+      return nil
     }
     guard let value = val as? [Fields] else {
       throw AllObjectsError.wrongType(key: key)

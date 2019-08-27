@@ -41,24 +41,12 @@ public class PBXProject : PBXContainer {
   public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
     self.developmentRegion = try fields.string("developmentRegion")
     self.hasScannedForEncodings = try fields.bool("hasScannedForEncodings")
-    if fields["knownRegions"] == nil {
-      self.knownRegions = nil
-    } else {
-      self.knownRegions = try fields.strings("knownRegions")
-    }
-
+    self.knownRegions = try fields.optionalStrings("knownRegions")
     self.buildConfigurationList = allObjects.createReference(id: try fields.id("buildConfigurationList"))
     self.mainGroup = allObjects.createReference(id: try fields.id("mainGroup"))
     self.targets = allObjects.createReferences(ids: try fields.ids("targets"))
-
-    if fields["projectReferences"] == nil {
-      self.projectReferences = nil
-    }
-    else {
-      let projectReferenceFields = try fields.fieldsArray("projectReferences")
-      self.projectReferences = try projectReferenceFields
-        .map { try ProjectReference(fields: $0, allObjects: allObjects) }
-    }
+    self.projectReferences = try fields.optionalFieldsArray("projectReferences")?
+      .map { try ProjectReference(fields: $0, allObjects: allObjects) }
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
   }
@@ -182,13 +170,8 @@ public /* abstract */ class PBXTarget : PBXProjectItem {
     self.productName = try fields.optionalString("productName")
     self._buildPhases = allObjects.createReferences(ids: try fields.ids("buildPhases"))
     self.dependencies = allObjects.createReferences(ids: try fields.ids("dependencies"))
-
-    if fields["packageProductDependencies"] == nil {
-      self.packageProductDependencies = nil
-    }
-    else {
-      self.packageProductDependencies = allObjects.createReferences(ids: try fields.ids("packageProductDependencies"))
-    }
+    self.packageProductDependencies = try fields.optionalIds("packageProductDependencies")
+      .map { allObjects.createReferences(ids: $0) }
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
   }
