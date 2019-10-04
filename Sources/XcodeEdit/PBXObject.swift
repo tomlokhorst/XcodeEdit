@@ -45,7 +45,7 @@ public class PBXProject : PBXContainer {
     self.developmentRegion = try fields.string("developmentRegion")
     self.hasScannedForEncodings = try fields.bool("hasScannedForEncodings")
     self.knownRegions = try fields.optionalStrings("knownRegions")
-    self.knownAssetTags = try attributes?.strings("KnownAssetTags")
+    self.knownAssetTags = try attributes?.optionalStrings("KnownAssetTags")
     self.buildConfigurationList = allObjects.createReference(id: try fields.id("buildConfigurationList"))
     self.mainGroup = allObjects.createReference(id: try fields.id("mainGroup"))
     self.targets = allObjects.createReferences(ids: try fields.ids("targets"))
@@ -56,11 +56,11 @@ public class PBXProject : PBXContainer {
   }
 
   public class ProjectReference {
-    public let ProductGroup: Reference<PBXGroup>
+    public let ProductGroup: Reference<PBXGroup>?
     public let ProjectRef: Reference<PBXFileReference>
 
     public required init(fields: Fields, allObjects: AllObjects) throws {
-      self.ProductGroup = allObjects.createReference(id: try fields.id("ProductGroup"))
+      self.ProductGroup = allObjects.createOptionalReference(id: try fields.optionalId("ProductGroup"))
       self.ProjectRef = allObjects.createReference(id: try fields.id("ProjectRef"))
     }
   }
