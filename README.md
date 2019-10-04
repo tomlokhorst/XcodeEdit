@@ -31,6 +31,7 @@ try! proj.write(to: xcodeproj, format: PropertyListSerialization.PropertyListFor
 Releases
 --------
 
+ - 2.7.4 - 2019-10-04 - Improved parsing of optional fields
  - 2.7.3 - 2019-07-28 - Use Swift native random function
  - 2.7.2 - 2019-07-28 - Improved suport for SPM
  - 2.7.0 - 2019-06-10 - Add suport for Xcode 13 SPM objects
