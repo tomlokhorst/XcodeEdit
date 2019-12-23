@@ -144,6 +144,9 @@ public class PBXShellScriptBuildPhase : PBXBuildPhase {
 public class PBXSourcesBuildPhase : PBXBuildPhase {
 }
 
+public class PBXBuildRule: PBXProjectItem {
+}
+
 public class PBXBuildStyle : PBXProjectItem {
 }
 
@@ -165,6 +168,7 @@ public /* abstract */ class PBXTarget : PBXProjectItem {
   public let name: String
   public let productName: String?
   private var _buildPhases: [Reference<PBXBuildPhase>]
+  private var _buildRules: [Reference<PBXBuildRule>]
   public let dependencies: [Reference<PBXTargetDependency>]
   public let packageProductDependencies: [Reference<XCSwiftPackageProductDependency>]?
 
@@ -173,6 +177,7 @@ public /* abstract */ class PBXTarget : PBXProjectItem {
     self.name = try fields.string("name")
     self.productName = try fields.optionalString("productName")
     self._buildPhases = allObjects.createReferences(ids: try fields.ids("buildPhases"))
+    self._buildRules = allObjects.createReferences(ids: try fields.ids("buildRules"))
     self.dependencies = allObjects.createReferences(ids: try fields.ids("dependencies"))
     self.packageProductDependencies = try fields.optionalIds("packageProductDependencies")
       .map { allObjects.createReferences(ids: $0) }
@@ -182,6 +187,10 @@ public /* abstract */ class PBXTarget : PBXProjectItem {
 
   public var buildPhases: [Reference<PBXBuildPhase>] {
     return _buildPhases
+  }
+
+  public var buildRules: [Reference<PBXBuildRule>] {
+    return _buildRules
   }
 
   // Custom function for R.swift
