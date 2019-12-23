@@ -63,5 +63,10 @@ for target in proj.project.targets.compactMap({ $0.value }) {
 //    }
     print()
   }
+
+  for buildRule in target.buildRules {
+    print(buildRule.value!)
+    print()
+  }
 }
 
