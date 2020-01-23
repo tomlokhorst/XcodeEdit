@@ -403,6 +403,7 @@ public enum Path: Equatable {
   case absolute(String)
   case relativeTo(SourceTreeFolder, String)
 
+  @available(iOS 9.0, *)
   @available(OSX 10.11, *)
   public func url(with urlForSourceTreeFolder: (SourceTreeFolder) -> URL) -> URL {
     switch self {
