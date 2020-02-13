@@ -144,6 +144,9 @@ public class PBXShellScriptBuildPhase : PBXBuildPhase {
 public class PBXSourcesBuildPhase : PBXBuildPhase {
 }
 
+public class PBXBuildRule: PBXProjectItem {
+}
+
 public class PBXBuildStyle : PBXProjectItem {
 }
 
@@ -200,6 +203,13 @@ public class PBXLegacyTarget : PBXTarget {
 }
 
 public class PBXNativeTarget : PBXTarget {
+  public let buildRules: [Reference<PBXBuildRule>]
+
+  public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
+    self.buildRules = allObjects.createReferences(ids: try fields.ids("buildRules"))
+
+    try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
 }
 
 public class PBXTargetDependency : PBXProjectItem {

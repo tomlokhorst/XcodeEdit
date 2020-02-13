@@ -63,5 +63,6 @@ for target in proj.project.targets.compactMap({ $0.value }) {
 //    }
     print()
   }
+
 }
 

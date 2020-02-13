@@ -18,6 +18,22 @@
 		6BB0FF2C6876A52C91E46ABE /* Pods_R_swiftTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C643979AEA6A580883B90C59 /* Pods_R_swiftTest.framework */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXBuildRule section */
+		E2B829B523F5970500200547 /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.plist";
+			fileType = pattern.proxy;
+			inputFiles = (
+			);
+			isEditable = 1;
+			outputFiles = (
+				"$(DERIVED_FILE_DIR)/${INPUT_FILE_NAME}",
+			);
+			script = "cat\n";
+		};
+/* End PBXBuildRule section */
+
 /* Begin PBXContainerItemProxy section */
 		01345A7A20D25C7500BD812A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -132,13 +148,14 @@
 			buildConfigurationList = 01345A6C20D24C0100BD812A /* Build configuration list for PBXNativeTarget "R.swiftTest" */;
 			buildPhases = (
 				179111CA9821F85C900D8102 /* [CP] Check Pods Manifest.lock */,
-				01345A7120D259EB00BD812A /* ShellScript */,
+				01345A7120D259EB00BD812A /* R.swift */,
 				01345A5620D24BFF00BD812A /* Sources */,
 				01345A5720D24BFF00BD812A /* Frameworks */,
 				01345A5820D24BFF00BD812A /* Resources */,
 				2A242B082559080243A00DB6 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
+				E2B829B523F5970500200547 /* PBXBuildRule */,
 			);
 			dependencies = (
 				01345A7B20D25C7500BD812A /* PBXTargetDependency */,
@@ -201,13 +218,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		01345A7120D259EB00BD812A /* ShellScript */ = {
+		01345A7120D259EB00BD812A /* R.swift */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
+			name = R.swift;
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;

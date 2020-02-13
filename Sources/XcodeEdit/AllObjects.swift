@@ -233,6 +233,7 @@ private let types: [String: PBXObject.Type] = [
   "PBXResourcesBuildPhase": PBXResourcesBuildPhase.self,
   "PBXShellScriptBuildPhase": PBXShellScriptBuildPhase.self,
   "PBXSourcesBuildPhase": PBXSourcesBuildPhase.self,
+  "PBXBuildRule": PBXBuildRule.self,
   "PBXBuildStyle": PBXBuildStyle.self,
   "XCBuildConfiguration": XCBuildConfiguration.self,
   "PBXAggregateTarget": PBXAggregateTarget.self,
