@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "XcodeEdit"
-  s.version      = "2.7.4"
+  s.version      = "2.7.5"
   s.license      = "MIT"
 
   s.summary      = "Reading and writing the Xcode pbxproj file format, from Swift!"
