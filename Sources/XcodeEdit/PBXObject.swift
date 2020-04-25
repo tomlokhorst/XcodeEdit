@@ -215,8 +215,13 @@ public class PBXNativeTarget : PBXTarget {
 public class PBXTargetDependency : PBXProjectItem {
   public let targetProxy: Reference<PBXContainerItemProxy>?
 
+  // Note: Not sure if productRefs should only reference XCSwiftPackageProductDependency
+  // or if it should refer to an extra superclass
+  public let productRef: Reference<XCSwiftPackageProductDependency>?
+
   public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
     self.targetProxy = allObjects.createOptionalReference(id: try fields.optionalId("targetProxy"))
+    self.productRef = allObjects.createOptionalReference(id: try fields.optionalId("productRef"))
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
   }
