@@ -31,6 +31,7 @@ try! proj.write(to: xcodeproj, format: PropertyListSerialization.PropertyListFor
 Releases
 --------
 
+ - 2.7.7 - 2020-05-08 - Add support for remote swift packages
  - 2.7.6 - 2020-04-25 - Add support for SPM product dependencies
  - 2.7.5 - 2020-02-13 - Add support for PBXBuildRule
  - 2.7.4 - 2019-10-04 - Improved parsing of optional fields

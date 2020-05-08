@@ -37,6 +37,7 @@ public class PBXProject : PBXContainer {
   public let knownRegions: [String]?
   public let knownAssetTags: [String]?
   public let mainGroup: Reference<PBXGroup>
+  public let packageReferences: [Reference<XCRemoteSwiftPackageReference>]?
   public let targets: [Reference<PBXTarget>]
   public let projectReferences: [ProjectReference]?
 
@@ -48,6 +49,7 @@ public class PBXProject : PBXContainer {
     self.knownAssetTags = try attributes?.optionalStrings("KnownAssetTags")
     self.buildConfigurationList = allObjects.createReference(id: try fields.id("buildConfigurationList"))
     self.mainGroup = allObjects.createReference(id: try fields.id("mainGroup"))
+    self.packageReferences = allObjects.createOptionalReferences(ids: try fields.optionalIds("packageReferences"))
     self.targets = allObjects.createReferences(ids: try fields.ids("targets"))
     self.projectReferences = try fields.optionalFieldsArray("projectReferences")?
       .map { try ProjectReference(fields: $0, allObjects: allObjects) }
@@ -177,8 +179,7 @@ public /* abstract */ class PBXTarget : PBXProjectItem {
     self.productName = try fields.optionalString("productName")
     self._buildPhases = allObjects.createReferences(ids: try fields.ids("buildPhases"))
     self.dependencies = allObjects.createReferences(ids: try fields.ids("dependencies"))
-    self.packageProductDependencies = try fields.optionalIds("packageProductDependencies")
-      .map { allObjects.createReferences(ids: $0) }
+    self.packageProductDependencies = allObjects.createOptionalReferences(ids: try fields.optionalIds("packageProductDependencies"))
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
   }

@@ -69,6 +69,10 @@ public class AllObjects {
     return ids.map(createReference)
   }
 
+  internal func createOptionalReferences<Value>(ids: [Guid]?) -> [Reference<Value>]? {
+    ids.map { createReferences(ids: $0) }
+  }
+
   internal func createOptionalReference<Value>(id: Guid?) -> Reference<Value>? {
     guard let id = id else { return nil }
     return createReference(id: id)
