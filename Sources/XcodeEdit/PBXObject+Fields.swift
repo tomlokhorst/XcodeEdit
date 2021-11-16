@@ -85,6 +85,14 @@ internal extension Dictionary where Key == String {
     }
   }
 
+  func optionalBool(_ key: String) throws -> Bool? {
+    guard let _ = self[key] else {
+      return nil
+    }
+
+    return try bool(key)
+  }
+
   func optionalURL(_ key: String) throws -> URL? {
     guard let val = self[key] else {
       return nil

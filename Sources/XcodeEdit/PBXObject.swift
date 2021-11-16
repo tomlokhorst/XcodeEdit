@@ -134,10 +134,20 @@ public class PBXResourcesBuildPhase : PBXBuildPhase {
 public class PBXShellScriptBuildPhase : PBXBuildPhase {
   public let name: String?
   public let shellScript: String
+  public let alwaysOutOfDate: Bool?
+  public let inputFileListPaths: [String]?
+  public let inputPaths: [String]?
+  public let outputFileListPaths: [String]?
+  public let outputPaths: [String]?
 
   public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
     self.name = try fields.optionalString("name")
     self.shellScript = try fields.string("shellScript")
+    self.alwaysOutOfDate = try fields.optionalBool("alwaysOutOfDate")
+    self.inputFileListPaths = try fields.optionalStrings("inputFileListPaths")
+    self.inputPaths = try fields.optionalStrings("inputPaths")
+    self.outputFileListPaths = try fields.optionalStrings("outputFileListPaths")
+    self.outputPaths = try fields.optionalStrings("outputPaths")
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
   }
