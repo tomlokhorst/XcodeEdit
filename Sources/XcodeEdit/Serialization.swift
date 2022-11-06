@@ -157,6 +157,10 @@ internal class Serializer {
         return copyFiles.name ?? "CopyFiles"
       }
       if let dependency = obj as? XCSwiftPackageProductDependency {
+        let plugin = "plugin:"
+        if let productName = dependency.productName, productName.hasPrefix(plugin) {
+          return String(productName.dropFirst(plugin.count))
+        }
         return dependency.productName
       }
       if let reference = obj as? XCRemoteSwiftPackageReference {
