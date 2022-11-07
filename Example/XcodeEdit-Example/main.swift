@@ -20,13 +20,21 @@ let start = Date()
 let xcodeproj = URL(fileURLWithPath: args[1])
 let proj = try! XCProjectFile(xcodeprojURL: xcodeproj)
 
+for obj in proj.allObjects.objects.values {
+  if let dep = obj as? XCSwiftPackageProductDependency {
+    if dep.productName?.hasPrefix("plugin:") == true {
+      dep.removePackage()
+    }
+  }
+}
+
 // Write out a new pbxproj file
 try! proj.write(to: xcodeproj, format: PropertyListSerialization.PropertyListFormat.openStep)
 
 let time = Date().timeIntervalSince(start)
 print("Timeinterval: \(time)")
 
-//exit(0)
+exit(0)
 
 // Print paths for all files in Resources build phases
 //for target in proj.project.targets.flatMap({ $0.value }) {

@@ -242,13 +242,19 @@ public class PBXTargetDependency : PBXProjectItem {
 public class XCSwiftPackageProductDependency : PBXProjectItem {
 
   public let productName: String?
-  public let package: Reference<XCRemoteSwiftPackageReference>?
+  public private(set) var package: Reference<XCRemoteSwiftPackageReference>?
 
   public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
     self.productName = try fields.optionalString("productName")
     self.package = allObjects.createOptionalReference(id: try fields.optionalId("package"))
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
+
+  // Custom function for R.swift
+  public func removePackage() {
+    package = nil
+    fields["package"] = nil
   }
 }
 
