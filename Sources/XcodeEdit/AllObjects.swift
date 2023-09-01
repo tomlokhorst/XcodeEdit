@@ -246,6 +246,7 @@ private let types: [String: PBXObject.Type] = [
   "PBXTargetDependency": PBXTargetDependency.self,
   "XCSwiftPackageProductDependency": XCSwiftPackageProductDependency.self,
   "XCRemoteSwiftPackageReference": XCRemoteSwiftPackageReference.self,
+  "XCLocalSwiftPackageReference": XCLocalSwiftPackageReference.self,
   "XCConfigurationList": XCConfigurationList.self,
   "PBXReference": PBXReference.self,
   "PBXReferenceProxy": PBXReferenceProxy.self,

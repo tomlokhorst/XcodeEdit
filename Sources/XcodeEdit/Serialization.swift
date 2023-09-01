@@ -163,11 +163,14 @@ internal class Serializer {
         }
         return dependency.productName
       }
-      if let reference = obj as? XCRemoteSwiftPackageReference {
-        if let repositoryName = reference.repositoryURL?.deletingPathExtension().lastPathComponent {
+      if let remoteRef = obj as? XCRemoteSwiftPackageReference {
+        if let repositoryName = remoteRef.repositoryURL?.deletingPathExtension().lastPathComponent {
           return "XCRemoteSwiftPackageReference \"\(repositoryName)\""
         }
         return "XCRemoteSwiftPackageReference"
+      }
+      if let localRef = obj as? XCLocalSwiftPackageReference {
+        return "XCLocalSwiftPackageReference \"\(localRef.pathString)\""
       }
       if obj is PBXFrameworksBuildPhase {
         return "Frameworks"
