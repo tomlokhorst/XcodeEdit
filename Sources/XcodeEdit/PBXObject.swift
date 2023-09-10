@@ -37,7 +37,7 @@ public class PBXProject : PBXContainer {
   public let knownRegions: [String]?
   public let knownAssetTags: [String]?
   public let mainGroup: Reference<PBXGroup>
-  public let packageReferences: [Reference<XCRemoteSwiftPackageReference>]?
+  public let packageReferences: [Reference<XCSwiftPackageReference>]?
   public let targets: [Reference<PBXTarget>]
   public let projectReferences: [ProjectReference]?
 
@@ -259,7 +259,10 @@ public class XCSwiftPackageProductDependency : PBXProjectItem {
 }
 
 // Note: Not sure if ProjectItem is correct superclass
-public class XCRemoteSwiftPackageReference : PBXProjectItem {
+public /* abstract */ class XCSwiftPackageReference : PBXProjectItem {
+}
+
+public class XCRemoteSwiftPackageReference : XCSwiftPackageReference {
   public let repositoryURL: URL?
 
   public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
@@ -268,6 +271,19 @@ public class XCRemoteSwiftPackageReference : PBXProjectItem {
     try super.init(id: id, fields: fields, allObjects: allObjects)
   }
 }
+
+public class XCLocalSwiftPackageReference : XCSwiftPackageReference {
+  public let relativePath: Path
+  let pathString: String
+
+  public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
+      pathString = try fields.string("relativePath")
+      self.relativePath = .relativeTo(.sourceRoot, pathString)
+      
+    try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
+}
+
 
 public class XCConfigurationList : PBXProjectItem {
   public let buildConfigurations: [Reference<XCBuildConfiguration>]
