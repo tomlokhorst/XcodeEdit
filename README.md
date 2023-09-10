@@ -31,6 +31,7 @@ try! proj.write(to: xcodeproj, format: PropertyListSerialization.PropertyListFor
 Releases
 --------
 
+ - 2.9.1 - 2023-09-10 - Add support for local swift packages
  - 2.9.0 - 2022-11-07 - Add removePackage function to XCSwiftPackageProductDependency
  - 2.8.0 - 2021-11-17 - Add fields to PBXShellScriptBuildPhase
  - 2.7.7 - 2020-05-08 - Add support for remote swift packages
