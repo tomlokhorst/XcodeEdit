@@ -19,14 +19,15 @@ extension XCProjectFile {
   public func createShellScript(name: String, shellScript: String) throws -> PBXShellScriptBuildPhase {
     let fields: [String: Any] = [
       "isa": "PBXShellScriptBuildPhase",
-      "files": [],
+      "files": [] as [String],
       "name": name,
       "runOnlyForDeploymentPostprocessing": 0,
       "shellPath": "/bin/sh",
-      "inputPaths": [],
-      "outputPaths": [],
+      "inputPaths": [] as [String],
+      "outputPaths": [] as [String],
       "shellScript": shellScript,
-      "buildActionMask": 0x7FFFFFFF]
+      "buildActionMask": 0x7FFFFFFF
+    ]
 
     let guid = allObjects.createFreshGuid(from: project.id)
     let scriptBuildPhase = try PBXShellScriptBuildPhase(id: guid, fields: fields, allObjects: allObjects)

@@ -9,7 +9,7 @@
 import Foundation
 
 internal extension Dictionary where Key == Guid, Value == AnyObject {
-  mutating func set<Value>(key: Guid, reference: Reference<Value>?) {
+  mutating func set<V>(key: Guid, reference: Reference<V>?) {
     if let reference = reference {
       self[key] = reference.id.value as NSString
     }
