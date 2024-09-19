@@ -181,6 +181,7 @@ public /* abstract */ class PBXTarget : PBXProjectItem {
   public let productName: String?
   private var _buildPhases: [Reference<PBXBuildPhase>]
   public let dependencies: [Reference<PBXTargetDependency>]
+  public let fileSystemSynchronizedGroups: [Reference<PBXFileSystemSynchronizedRootGroup>]?
   public let packageProductDependencies: [Reference<XCSwiftPackageProductDependency>]?
 
   public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
@@ -189,6 +190,7 @@ public /* abstract */ class PBXTarget : PBXProjectItem {
     self.productName = try fields.optionalString("productName")
     self._buildPhases = allObjects.createReferences(ids: try fields.ids("buildPhases"))
     self.dependencies = allObjects.createReferences(ids: try fields.ids("dependencies"))
+    self.fileSystemSynchronizedGroups = allObjects.createOptionalReferences(ids: try fields.optionalIds("fileSystemSynchronizedGroups"))
     self.packageProductDependencies = allObjects.createOptionalReferences(ids: try fields.optionalIds("packageProductDependencies"))
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
