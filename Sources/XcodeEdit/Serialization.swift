@@ -129,7 +129,7 @@ internal class Serializer {
 
           for object in objects.sorted(by: { $0.id }) {
 
-            let multiline = isa != "PBXBuildFile" && isa != "PBXFileReference"
+            let multiline = isa != "PBXBuildFile" && isa != "PBXFileReference" && isa != "PBXFileSystemSynchronizedRootGroup"
 
             let parts = rows(type: isa, objectId: object.id, multiline: multiline, fields: object.fields)
             if multiline {
@@ -340,12 +340,14 @@ internal class Serializer {
           }
         }
         else {
-          parts.append(ps.joined(separator: "") + "}; ")
+          parts.append(ps.joined(separator: ""))
         }
       }
 
       if multiline {
         parts.append("};")
+      } else {
+        parts.append("}; ")
       }
 
     }
