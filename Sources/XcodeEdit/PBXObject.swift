@@ -393,6 +393,19 @@ public class PBXGroup : PBXReference {
 public class PBXVariantGroup : PBXGroup {
 }
 
+public class PBXFileSystemSynchronizedRootGroup : PBXReference {
+  public let exceptions: [Reference<PBXFileSystemSynchronizedBuildFileExceptionSet>]?
+
+  public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
+    self.exceptions = allObjects.createOptionalReferences(ids: try fields.optionalIds("exceptions"))
+
+    try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
+}
+
+public class PBXFileSystemSynchronizedBuildFileExceptionSet : PBXObject {
+}
+
 public class XCVersionGroup : PBXReference {
   public let children: [Reference<PBXFileReference>]
 

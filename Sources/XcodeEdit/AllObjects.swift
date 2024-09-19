@@ -253,5 +253,7 @@ private let types: [String: PBXObject.Type] = [
   "PBXFileReference": PBXFileReference.self,
   "PBXGroup": PBXGroup.self,
   "PBXVariantGroup": PBXVariantGroup.self,
+  "PBXFileSystemSynchronizedRootGroup": PBXFileSystemSynchronizedRootGroup.self,
+  "PBXFileSystemSynchronizedBuildFileExceptionSet": PBXFileSystemSynchronizedBuildFileExceptionSet.self,
   "XCVersionGroup": XCVersionGroup.self
 ]
