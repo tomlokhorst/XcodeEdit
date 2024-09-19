@@ -46,9 +46,14 @@ public enum ProjectFileError: LocalizedError {
 }
 
 public class XCProjectFile {
+  public enum Format {
+    case plist(PropertyListSerialization.PropertyListFormat)
+    case json
+  }
+
   public let project: PBXProject
   let fields: Fields
-  var format: PropertyListSerialization.PropertyListFormat
+  var format: Format
   let allObjects = AllObjects()
 
   public convenience init(xcodeprojURL: URL, ignoreReferenceErrors: Bool = false) throws {
@@ -59,19 +64,27 @@ public class XCProjectFile {
   }
 
   public convenience init(propertyListData data: Data, ignoreReferenceErrors: Bool = false) throws {
+    do {
+      var format: PropertyListSerialization.PropertyListFormat = PropertyListSerialization.PropertyListFormat.binary
+      let obj = try PropertyListSerialization.propertyList(from: data, options: [], format: &format)
 
-    let options = PropertyListSerialization.MutabilityOptions()
-    var format: PropertyListSerialization.PropertyListFormat = PropertyListSerialization.PropertyListFormat.binary
-    let obj = try PropertyListSerialization.propertyList(from: data, options: options, format: &format)
+      guard let fields = obj as? Fields else {
+        throw ProjectFileError.invalidData
+      }
 
-    guard let fields = obj as? Fields else {
-      throw ProjectFileError.invalidData
+      try self.init(fields: fields, format: .plist(format), ignoreReferenceErrors: ignoreReferenceErrors)
+    } catch CocoaError.propertyListReadCorrupt {
+      let obj = try JSONSerialization.jsonObject(with: data)
+
+      guard let fields = obj as? Fields else {
+        throw ProjectFileError.invalidData
+      }
+
+      try self.init(fields: fields, format: .json, ignoreReferenceErrors: ignoreReferenceErrors)
     }
-
-    try self.init(fields: fields, format: format, ignoreReferenceErrors: ignoreReferenceErrors)
   }
 
-  private init(fields: Fields, format: PropertyListSerialization.PropertyListFormat, ignoreReferenceErrors: Bool = false) throws {
+  private init(fields: Fields, format: Format, ignoreReferenceErrors: Bool = false) throws {
 
     guard let objects = fields["objects"] as? [String: Fields] else {
       throw AllObjectsError.wrongType(key: "objects")

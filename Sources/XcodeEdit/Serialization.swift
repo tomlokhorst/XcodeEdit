@@ -8,24 +8,43 @@
 
 import Foundation
 
+enum XCProjectFileError: Error {
+  case cantCreateOutputStream
+}
+
 extension XCProjectFile {
 
-  public func write(to url: URL, format: PropertyListSerialization.PropertyListFormat? = nil) throws {
+  public func write(to url: URL, format: Format? = nil) throws {
 
     try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
 
     let name = try XCProjectFile.projectName(from: url)
     let path = url.appendingPathComponent("project.pbxproj", isDirectory: false)
 
-    let serializer = Serializer(projectName: name, projectFile: self)
-    let plformat = format ?? self.format
+    let outputFormat = format ?? self.format
 
-    if plformat == PropertyListSerialization.PropertyListFormat.openStep {
-      try serializer.openStepSerialization.write(to: path, atomically: true, encoding: String.Encoding.utf8)
-    }
-    else {
-      let data = try PropertyListSerialization.data(fromPropertyList: fields, format: plformat, options: 0)
-      try data.write(to: path)
+    switch outputFormat {
+    case .plist(let plformat):
+      if plformat == .openStep {
+        let serializer = Serializer(projectName: name, projectFile: self)
+        try serializer.openStepSerialization.write(to: path, atomically: true, encoding: String.Encoding.utf8)
+      }
+      else {
+        let data = try PropertyListSerialization.data(fromPropertyList: fields, format: plformat, options: 0)
+        try data.write(to: path)
+      }
+
+    case .json:
+      guard let outputStream = OutputStream(url: path, append: false) else {
+        throw XCProjectFileError.cantCreateOutputStream
+      }
+      var error: (NSError)?
+
+      outputStream.open()
+      _ = JSONSerialization.writeJSONObject(fields, to: outputStream, options: [.sortedKeys], error: &error)
+      if let error {
+        throw error
+      }
     }
   }
 
@@ -33,12 +52,19 @@ extension XCProjectFile {
 
     let serializer = Serializer(projectName: projectName, projectFile: self)
 
-    if format == PropertyListSerialization.PropertyListFormat.openStep {
-      return serializer.openStepSerialization.data(using: String.Encoding.utf8)!
+    switch format {
+    case .plist(let plformat):
+      switch plformat {
+      case .openStep:
+        return serializer.openStepSerialization.data(using: String.Encoding.utf8)!
+      default:
+        return try PropertyListSerialization.data(fromPropertyList: fields, format: plformat, options: 0)
+      }
+
+    case .json:
+      return try JSONSerialization.data(withJSONObject: fields)
     }
-    else {
-      return try PropertyListSerialization.data(fromPropertyList: fields, format: format, options: 0)
-    }
+
   }
 }
 

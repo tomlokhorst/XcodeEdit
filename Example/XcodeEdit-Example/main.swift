@@ -29,7 +29,7 @@ for obj in proj.allObjects.objects.values {
 }
 
 // Write out a new pbxproj file
-try! proj.write(to: xcodeproj, format: PropertyListSerialization.PropertyListFormat.openStep)
+try! proj.write(to: xcodeproj, format: .plist(.openStep))
 
 let time = Date().timeIntervalSince(start)
 print("Timeinterval: \(time)")
