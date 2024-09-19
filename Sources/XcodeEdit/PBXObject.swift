@@ -404,6 +404,15 @@ public class PBXFileSystemSynchronizedRootGroup : PBXReference {
 }
 
 public class PBXFileSystemSynchronizedBuildFileExceptionSet : PBXObject {
+  public let membershipExceptions: [String]?
+  public let target: Reference<PBXTarget>
+
+  public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
+    self.membershipExceptions = try fields.optionalStrings("membershipExceptions")
+    self.target = allObjects.createReference(id: try fields.id("target"))
+
+    try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
 }
 
 public class XCVersionGroup : PBXReference {
