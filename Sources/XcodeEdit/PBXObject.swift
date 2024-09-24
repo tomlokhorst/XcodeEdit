@@ -417,6 +417,16 @@ public class PBXFileSystemSynchronizedBuildFileExceptionSet : PBXObject {
   }
 }
 
+public class PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet : PBXObject {
+  public let buildPhase: Reference<PBXBuildPhase>?
+
+  public required init(id: Guid, fields: Fields, allObjects: AllObjects) throws {
+    self.buildPhase = allObjects.createOptionalReference(id: try fields.id("buildPhase"))
+
+    try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
+}
+
 public class XCVersionGroup : PBXReference {
   public let children: [Reference<PBXFileReference>]
 

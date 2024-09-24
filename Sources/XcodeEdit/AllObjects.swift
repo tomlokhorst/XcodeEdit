@@ -255,5 +255,6 @@ private let types: [String: PBXObject.Type] = [
   "PBXVariantGroup": PBXVariantGroup.self,
   "PBXFileSystemSynchronizedRootGroup": PBXFileSystemSynchronizedRootGroup.self,
   "PBXFileSystemSynchronizedBuildFileExceptionSet": PBXFileSystemSynchronizedBuildFileExceptionSet.self,
+  "PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet": PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet.self,
   "XCVersionGroup": XCVersionGroup.self
 ]
