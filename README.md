@@ -31,6 +31,7 @@ try! proj.write(to: xcodeproj, format: PropertyListSerialization.PropertyListFor
 Releases
 --------
 
+ - 2.10.2 - 2024-09-24 - Add PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet
  - 2.10.1 - 2024-09-19 - Serialization fix for file system synchronized directories
  - 2.10.0 - 2024-09-19 - Add support for file system synchronized directories in Xcode 16
  - 2.9.2 - 2023-09-20 - Fix warnings in Xcode 15
