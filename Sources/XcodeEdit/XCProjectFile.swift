@@ -156,6 +156,31 @@ public class XCProjectFile {
       }
     }
 
+    let syncRoots = current.syncRoots.compactMap { $0.value }
+    for sync in syncRoots {
+      guard let path = sync.path else { continue }
+
+      switch sync.sourceTree {
+      case .group:
+        switch current.sourceTree {
+        case .absolute:
+          ps[sync.id] = .absolute(prefix + path)
+
+        case .group:
+          ps[sync.id] = .relativeTo(.sourceRoot, prefix + path)
+
+        case .relativeTo(let sourceTreeFolder):
+          ps[sync.id] = .relativeTo(sourceTreeFolder, prefix + path)
+        }
+
+      case .absolute:
+        ps[sync.id] = .absolute(path)
+
+      case let .relativeTo(sourceTreeFolder):
+        ps[sync.id] = .relativeTo(sourceTreeFolder, path)
+      }
+    }
+
     let subGroups = current.subGroups.compactMap { $0.value }
     for group in subGroups {
       if let path = group.path {
