@@ -382,6 +382,13 @@ public class PBXGroup : PBXReference {
     }
   }
 
+  public var syncRoots: [Reference<PBXFileSystemSynchronizedRootGroup>] {
+    return _children.compactMap { childRef in
+      guard let _ = childRef.value as? PBXFileSystemSynchronizedRootGroup else { return nil }
+      return Reference(allObjects: childRef.allObjects, id: childRef.id)
+    }
+  }
+
   // Custom function for R.swift
   public func insertFileReference(_ fileReference: Reference<PBXFileReference>, at index: Int) {
     if fileRefs.contains(fileReference) { return }
@@ -402,6 +409,11 @@ public class PBXFileSystemSynchronizedRootGroup : PBXReference {
     self.exceptions = allObjects.createOptionalReferences(ids: try fields.optionalIds("exceptions"))
 
     try super.init(id: id, fields: fields, allObjects: allObjects)
+  }
+
+  // convenience accessor
+  public var fullPath: Path? {
+    return self.allObjects.fullFilePaths[self.id]
   }
 }
 
