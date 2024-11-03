@@ -382,7 +382,8 @@ public class PBXGroup : PBXReference {
     }
   }
 
-  public var syncRoots: [Reference<PBXFileSystemSynchronizedRootGroup>] {
+  // Don't expose publicly, because this only exposes one level, not for all descentend sub groups.
+  internal var syncRoots: [Reference<PBXFileSystemSynchronizedRootGroup>] {
     return _children.compactMap { childRef in
       guard let _ = childRef.value as? PBXFileSystemSynchronizedRootGroup else { return nil }
       return Reference(allObjects: childRef.allObjects, id: childRef.id)
