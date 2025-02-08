@@ -8,10 +8,6 @@
 
 import Foundation
 
-enum XCProjectFileError: Error {
-  case cantCreateOutputStream
-}
-
 extension XCProjectFile {
 
   public func write(to url: URL, format: Format? = nil) throws {
@@ -21,54 +17,24 @@ extension XCProjectFile {
     let name = try XCProjectFile.projectName(from: url)
     let path = url.appendingPathComponent("project.pbxproj", isDirectory: false)
 
-    let outputFormat = format ?? self.format
-
-    switch outputFormat {
-    case .plist(let plformat):
-      if plformat == .openStep {
-        let serializer = Serializer(projectName: name, projectFile: self)
-        try serializer.openStepSerialization.write(to: path, atomically: true, encoding: String.Encoding.utf8)
-      }
-      else {
-        let data = try PropertyListSerialization.data(fromPropertyList: fields, format: plformat, options: 0)
-        try data.write(to: path)
-      }
-
-    case .json:
-      guard let outputStream = OutputStream(url: path, append: false) else {
-        throw XCProjectFileError.cantCreateOutputStream
-      }
-
-      outputStream.open()
-#if os(Linux)
-      _ = try JSONSerialization.writeJSONObject(fields, toStream: outputStream, options: [.sortedKeys])
-#else
-      var error: (NSError)?
-      
-      _ = JSONSerialization.writeJSONObject(fields, to: outputStream, options: [.sortedKeys], error: &error)
-      
-      if let error {
-        throw error
-      }
-#endif
-    }
+    let data = try serialized(projectName: name, format: format)
+    try data.write(to: path)
   }
 
-  public func serialized(projectName: String) throws -> Data {
-
-    let serializer = Serializer(projectName: projectName, projectFile: self)
-
-    switch format {
+  public func serialized(projectName: String, format: Format? = nil) throws -> Data {
+    let outputFormat = format ?? self.format
+    switch outputFormat {
     case .plist(let plformat):
       switch plformat {
       case .openStep:
-        return serializer.openStepSerialization.data(using: String.Encoding.utf8)!
+        let serializer = Serializer(projectName: projectName, projectFile: self)
+        return Data(serializer.openStepSerialization.utf8)
       default:
         return try PropertyListSerialization.data(fromPropertyList: fields, format: plformat, options: 0)
       }
 
     case .json:
-      return try JSONSerialization.data(withJSONObject: fields)
+      return try JSONSerialization.data(withJSONObject: fields, options: [.sortedKeys, .prettyPrinted])
     }
 
   }

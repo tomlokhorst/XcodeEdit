@@ -65,7 +65,7 @@ public class XCProjectFile {
 
   public convenience init(propertyListData data: Data, ignoreReferenceErrors: Bool = false) throws {
     do {
-      var format: PropertyListSerialization.PropertyListFormat = PropertyListSerialization.PropertyListFormat.binary
+      var format = PropertyListSerialization.PropertyListFormat.openStep
       let obj = try PropertyListSerialization.propertyList(from: data, options: [], format: &format)
 
       guard let fields = obj as? Fields else {
