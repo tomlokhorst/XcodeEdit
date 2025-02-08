@@ -38,13 +38,19 @@ extension XCProjectFile {
       guard let outputStream = OutputStream(url: path, append: false) else {
         throw XCProjectFileError.cantCreateOutputStream
       }
-      var error: (NSError)?
 
       outputStream.open()
+#if os(Linux)
+      _ = try JSONSerialization.writeJSONObject(fields, toStream: outputStream, options: [.sortedKeys])
+#else
+      var error: (NSError)?
+      
       _ = JSONSerialization.writeJSONObject(fields, to: outputStream, options: [.sortedKeys], error: &error)
+      
       if let error {
         throw error
       }
+#endif
     }
   }
 
