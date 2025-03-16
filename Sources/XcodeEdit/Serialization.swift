@@ -101,15 +101,7 @@ internal class Serializer {
 
                     for object in objects.sorted(by: { $0.id }) {
 
-                        let isSingleLineRootGroup: Bool
-                        if isa == "PBXFileSystemSynchronizedRootGroup" {
-                            isSingleLineRootGroup = !projectFile.isDetailedFileSystemSynchronization
-                        } else {
-                            isSingleLineRootGroup = false
-                        }
-
-                        let multiline = isa != "PBXBuildFile" && isa != "PBXFileReference" && !isSingleLineRootGroup
-
+                        let multiline = isa != "PBXBuildFile" && isa != "PBXFileReference"
                         let parts = rows(type: isa, objectId: object.id, multiline: multiline, fields: object.fields)
                         if multiline {
                             for ln in parts {
