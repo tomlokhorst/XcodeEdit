@@ -102,11 +102,12 @@ internal class Serializer {
           for object in objects.sorted(by: { $0.id }) {
 
             let isSingleLineRootGroup: Bool
-            if let rootGroup = object as? PBXFileSystemSynchronizedRootGroup {
-              isSingleLineRootGroup = rootGroup.exceptions?.count == 1
+            if isa == "PBXFileSystemSynchronizedRootGroup" {
+              isSingleLineRootGroup = !projectFile.isDetailedFileSystemSynchronization
             } else {
               isSingleLineRootGroup = false
             }
+
             let multiline = isa != "PBXBuildFile" && isa != "PBXFileReference" && !isSingleLineRootGroup
 
             let parts = rows(type: isa, objectId: object.id, multiline: multiline, fields: object.fields)
@@ -192,6 +193,12 @@ internal class Serializer {
     if obj is PBXSourcesBuildPhase {
       return "Sources"
     }
+    if let obj = obj as? PBXFileSystemSynchronizedBuildFileExceptionSet {
+      return commentFileSystemSynchronizedBuildFileExceptionSet(obj: obj)
+    }
+    if let obj = obj as? PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet {
+      return commentFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet(obj: obj)
+    }
     if let buildFile = obj as? PBXBuildFile {
       if let buildPhase = buildPhaseByFileId[id],
         let group = comment(id: buildPhase.id) {
@@ -221,6 +228,42 @@ internal class Serializer {
     return obj.isa
   }
 
+  func commentFileSystemSynchronizedBuildFileExceptionSet(obj: PBXFileSystemSynchronizedBuildFileExceptionSet) -> String {
+    guard projectFile.isDetailedFileSystemSynchronization else { return obj.isa }
+
+    let groups = projectFile.allObjects.objects.values.compactMap { $0 as? PBXFileSystemSynchronizedRootGroup }
+    guard
+      let group = groups.first(where: { $0.exceptions?.contains { $0.id == obj.id } ?? false }),
+      let path = group.path,
+      let target = obj.target.value
+    else {
+      return obj.isa
+    }
+
+    return "Exceptions for \"\(path)\" folder in \"\(target.name)\" target"
+  }
+
+  func commentFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet(obj: PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet) -> String {
+    guard projectFile.isDetailedFileSystemSynchronization else { return obj.isa }
+
+    let groups = projectFile.allObjects.objects.values.compactMap { $0 as? PBXFileSystemSynchronizedRootGroup }
+    guard
+      let group = groups.first(where: { $0.exceptions?.contains { $0.id == obj.id } ?? false }),
+      let path = group.path,
+      let copyFilesBuildPhase = obj.buildPhase?.value as? PBXCopyFilesBuildPhase ,
+      let phaseName = copyFilesBuildPhase.name
+    else {
+      return obj.isa
+    }
+
+    let nativeTargets = projectFile.project.targets.compactMap({ $0.value as? PBXNativeTarget })
+    guard let target = nativeTargets.first(where: { $0.buildPhases.contains(where: { $0.id == copyFilesBuildPhase.id }) }) else {
+      return obj.isa
+    }
+
+    return "Exceptions for \"\(path)\" folder in \"\(phaseName)\" phase from \"\(target.name)\" target"
+  }
+
   func valStr(_ val: String) -> String {
 
     let replacements: [(String, String)] = [
@@ -244,11 +287,19 @@ internal class Serializer {
     return "\"\(str)\""
   }
 
-  func objval(key: String, val: Any, multiline: Bool) -> [String] {
+  func objval(key: String, val: Any, multiline: Bool, inlineArray: Bool) -> [String] {
     var parts: [String] = []
     let keyStr = valStr(key)
 
-    if let valArr = val as? [String] {
+    if let valArr = val as? [String], inlineArray {
+      var ps: [String] = []
+      for valItem in valArr {
+        let str = valStr(valItem)
+        ps.append("\(str),")
+      }
+      parts.append("\(keyStr) = (" + ps.map { $0 + " "}.joined(separator: "") + ");")
+    }
+    else if let valArr = val as? [String] {
       parts.append("\(keyStr) = (")
 
       var ps: [String] = []
@@ -262,6 +313,7 @@ internal class Serializer {
 
         ps.append("\(str)\(extraComment),")
       }
+
       if multiline {
         for p in ps {
           parts.append("\t\(p)")
@@ -283,7 +335,7 @@ internal class Serializer {
 
         for valKey in valObj.keys.sorted() {
           let valVal = valObj[valKey]!
-          let ps = objval(key: valKey, val: valVal, multiline: multiline)
+          let ps = objval(key: valKey, val: valVal, multiline: multiline, inlineArray: inlineArray)
 
           if multiline {
             for p in ps {
@@ -308,7 +360,9 @@ internal class Serializer {
 
       for valKey in valObj.keys.sorted() {
         let valVal = valObj[valKey]!
-        let ps = objval(key: valKey, val: valVal, multiline: multiline)
+
+        let inlineArray = key == "assetTagsByRelativePath" && projectFile.isDetailedFileSystemSynchronization
+        let ps = objval(key: valKey, val: valVal, multiline: multiline, inlineArray: inlineArray)
 
         if multiline {
           for p in ps {
@@ -364,7 +418,7 @@ internal class Serializer {
       if key == "isa" { continue }
       let val = fields[key]!
 
-      for p in objval(key: key, val: val, multiline: multiline) {
+      for p in objval(key: key, val: val, multiline: multiline, inlineArray: false) {
         parts.append(p)
       }
     }

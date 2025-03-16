@@ -54,7 +54,12 @@ public class XCProjectFile {
   public let project: PBXProject
   let fields: Fields
   var format: Format
+  let objectVersion: String
   let allObjects = AllObjects()
+
+  internal var isDetailedFileSystemSynchronization: Bool {
+    objectVersion >= "77"
+  }
 
   public convenience init(xcodeprojURL: URL, ignoreReferenceErrors: Bool = false) throws {
     let pbxprojURL = xcodeprojURL.appendingPathComponent("project.pbxproj", isDirectory: false)
@@ -112,6 +117,7 @@ public class XCProjectFile {
     self.fields = fields
     self.format = format
     self.project = project
+    self.objectVersion = try fields.string("objectVersion")
     self.allObjects.fullFilePaths = paths(mainGroup, prefix: "")
   }
 
