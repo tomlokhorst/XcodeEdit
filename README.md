@@ -31,6 +31,7 @@ try! proj.write(to: xcodeproj, format: PropertyListSerialization.PropertyListFor
 Releases
 --------
 
+ - 2.13.0 - 2025-03-16 - Fix serialization for Xcode 16 projects
  - 2.12.0 - 2025-02-08 - Fix Linux support
  - 2.11.1 - 2024-11-03 - Make syncGroups property internal
  - 2.11.0 - 2024-11-03 - Add computed fullPath to PBXFileSystemSynchronizedRootGroup
