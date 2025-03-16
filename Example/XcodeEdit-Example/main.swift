@@ -20,13 +20,13 @@ let start = Date()
 let xcodeproj = URL(fileURLWithPath: args[1])
 let proj = try! XCProjectFile(xcodeprojURL: xcodeproj)
 
-for obj in proj.allObjects.objects.values {
-  if let dep = obj as? XCSwiftPackageProductDependency {
-    if dep.productName?.hasPrefix("plugin:") == true {
-      dep.removePackage()
-    }
-  }
-}
+//for obj in proj.allObjects.objects.values {
+//  if let dep = obj as? XCSwiftPackageProductDependency {
+//    if dep.productName?.hasPrefix("plugin:") == true {
+//      dep.removePackage()
+//    }
+//  }
+//}
 
 // Write out a new pbxproj file
 try! proj.write(to: xcodeproj, format: .plist(.openStep))
