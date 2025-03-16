@@ -147,80 +147,78 @@ internal class Serializer {
       return "Project object"
     }
 
-    if let obj = projectFile.allObjects.objects[id] {
-      if let ref = obj as? PBXReference {
-        return ref.name ?? ref.path
-      }
-      if let target = obj as? PBXTarget {
-        return target.name
-      }
-      if let config = obj as? XCBuildConfiguration {
-        return config.name
-      }
-      if let copyFiles = obj as? PBXCopyFilesBuildPhase {
-        return copyFiles.name ?? "CopyFiles"
-      }
-      if let dependency = obj as? XCSwiftPackageProductDependency {
-        let plugin = "plugin:"
-        if let productName = dependency.productName, productName.hasPrefix(plugin) {
-          return String(productName.dropFirst(plugin.count))
-        }
-        return dependency.productName
-      }
-      if let remoteRef = obj as? XCRemoteSwiftPackageReference {
-        if let repositoryName = remoteRef.repositoryURL?.deletingPathExtension().lastPathComponent {
-          return "XCRemoteSwiftPackageReference \"\(repositoryName)\""
-        }
-        return "XCRemoteSwiftPackageReference"
-      }
-      if let localRef = obj as? XCLocalSwiftPackageReference {
-        return "XCLocalSwiftPackageReference \"\(localRef.pathString)\""
-      }
-      if obj is PBXFrameworksBuildPhase {
-        return "Frameworks"
-      }
-      if obj is PBXHeadersBuildPhase {
-        return "Headers"
-      }
-      if obj is PBXResourcesBuildPhase {
-        return "Resources"
-      }
-      if let shellScript = obj as? PBXShellScriptBuildPhase {
-        return shellScript.name ?? "ShellScript"
-      }
-      if obj is PBXSourcesBuildPhase {
-        return "Sources"
-      }
-      if let buildFile = obj as? PBXBuildFile {
-        if let buildPhase = buildPhaseByFileId[id],
-          let group = comment(id: buildPhase.id) {
+    guard let obj = projectFile.allObjects.objects[id] else { return nil }
 
-          if let fileRefId = buildFile.fileRef?.id {
-            if let fileRef = comment(id: fileRefId) {
-              return "\(fileRef) in \(group)"
-            }
-          }
-          else if let productRefId = buildFile.productRef?.id {
-            if let productRef = comment(id: productRefId) {
-              return "\(productRef) in \(group)"
-            }
-          }
-          else {
-            return "(null) in \(group)"
-          }
-        }
+    if let ref = obj as? PBXReference {
+      return ref.name ?? ref.path
+    }
+    if let target = obj as? PBXTarget {
+      return target.name
+    }
+    if let config = obj as? XCBuildConfiguration {
+      return config.name
+    }
+    if let copyFiles = obj as? PBXCopyFilesBuildPhase {
+      return copyFiles.name ?? "CopyFiles"
+    }
+    if let dependency = obj as? XCSwiftPackageProductDependency {
+      let plugin = "plugin:"
+      if let productName = dependency.productName, productName.hasPrefix(plugin) {
+        return String(productName.dropFirst(plugin.count))
       }
-      if obj is XCConfigurationList {
-        if let target = targetsByConfigId[id] {
-          return "Build configuration list for \(target.isa) \"\(target.name)\""
-        }
-        return "Build configuration list for PBXProject \"\(projectName)\""
+      return dependency.productName
+    }
+    if let remoteRef = obj as? XCRemoteSwiftPackageReference {
+      if let repositoryName = remoteRef.repositoryURL?.deletingPathExtension().lastPathComponent {
+        return "XCRemoteSwiftPackageReference \"\(repositoryName)\""
       }
+      return "XCRemoteSwiftPackageReference"
+    }
+    if let localRef = obj as? XCLocalSwiftPackageReference {
+      return "XCLocalSwiftPackageReference \"\(localRef.pathString)\""
+    }
+    if obj is PBXFrameworksBuildPhase {
+      return "Frameworks"
+    }
+    if obj is PBXHeadersBuildPhase {
+      return "Headers"
+    }
+    if obj is PBXResourcesBuildPhase {
+      return "Resources"
+    }
+    if let shellScript = obj as? PBXShellScriptBuildPhase {
+      return shellScript.name ?? "ShellScript"
+    }
+    if obj is PBXSourcesBuildPhase {
+      return "Sources"
+    }
+    if let buildFile = obj as? PBXBuildFile {
+      if let buildPhase = buildPhaseByFileId[id],
+        let group = comment(id: buildPhase.id) {
 
-      return obj.isa
+        if let fileRefId = buildFile.fileRef?.id {
+          if let fileRef = comment(id: fileRefId) {
+            return "\(fileRef) in \(group)"
+          }
+        }
+        else if let productRefId = buildFile.productRef?.id {
+          if let productRef = comment(id: productRefId) {
+            return "\(productRef) in \(group)"
+          }
+        }
+        else {
+          return "(null) in \(group)"
+        }
+      }
+    }
+    if obj is XCConfigurationList {
+      if let target = targetsByConfigId[id] {
+        return "Build configuration list for \(target.isa) \"\(target.name)\""
+      }
+      return "Build configuration list for PBXProject \"\(projectName)\""
     }
 
-    return nil
+    return obj.isa
   }
 
   func valStr(_ val: String) -> String {
