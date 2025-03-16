@@ -61,9 +61,9 @@
 				E262D4411B7E20AA0057CCEE /* XcodeEdit */,
 				E22195AF1B7C6EDA00F58D3F /* Products */,
 			);
-			indentWidth = 2;
+			indentWidth = 4;
 			sourceTree = "<group>";
-			tabWidth = 2;
+			tabWidth = 4;
 			usesTabs = 0;
 		};
 		E22195AF1B7C6EDA00F58D3F /* Products */ = {
